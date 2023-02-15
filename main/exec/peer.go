@@ -142,7 +142,7 @@ func (peer *Peer) start() {
 	fmt.Println(peer.log())
 	go func() {
 		for {
-			if peer.id == 1 {
+			if peer.id == 3 {
 				fmt.Println(111)
 			}
 			if peer.checkBlockTimeout() {
