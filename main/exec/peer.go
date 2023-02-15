@@ -159,7 +159,7 @@ func peerImpl(peer *Peer) {
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
-	go peerImpl(peer)
+	peerImpl(peer)
 }
 
 // 停止节点
@@ -191,6 +191,6 @@ func init() {
 		peer.blockTimeStamp = timestamp
 		peer.epochTimeStamp = timestamp
 		peer.peersIds = peerList.getPeerId()
-		peer.start()
+		go peer.start()
 	}
 }
