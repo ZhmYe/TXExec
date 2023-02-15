@@ -140,25 +140,24 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
-	for {
-		if peer.id == 1 {
-			fmt.Println(11)
-		}
-		if peer.checkBlockTimeout() {
-			peer.BlockOut()
-			peer.getNewBlockTimeout()
-		}
-		if peer.state == Monitor {
-			if peer.checkEpochTimeout() {
-				var heightMap map[int]int
-				heightMap = make(map[int]int)
-				for _, id := range peer.peersIds {
-					var height = peer.sendCheckBlockHeight(id)
-					heightMap[id] = height
+	go func() {
+		for {
+			if peer.checkBlockTimeout() {
+				peer.BlockOut()
+				peer.getNewBlockTimeout()
+			}
+			if peer.state == Monitor {
+				if peer.checkEpochTimeout() {
+					var heightMap map[int]int
+					heightMap = make(map[int]int)
+					for _, id := range peer.peersIds {
+						var height = peer.sendCheckBlockHeight(id)
+						heightMap[id] = height
+					}
 				}
 			}
 		}
-	}
+	}()
 }
 
 // 停止节点
@@ -190,9 +189,6 @@ func init() {
 		peer.blockTimeStamp = timestamp
 		peer.epochTimeStamp = timestamp
 		peer.peersIds = peerList.getPeerId()
-		go func() {
-			fmt.Println(peer.id)
-			peer.start()
-		}()
+		peer.start()
 	}
 }
