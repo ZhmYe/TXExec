@@ -143,11 +143,11 @@ func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
 	for {
-		fmt.Println(peer.id)
-		//if peer.checkBlockTimeout() {
-		//	peer.BlockOut()
-		//	peer.getNewBlockTimeout()
-		//}
+		//fmt.Println(peer.id)
+		if peer.checkBlockTimeout() {
+			peer.BlockOut()
+			peer.getNewBlockTimeout()
+		}
 		//if peer.state == Monitor {
 		//	if peer.checkEpochTimeout() {
 		//		var heightMap map[int]int
