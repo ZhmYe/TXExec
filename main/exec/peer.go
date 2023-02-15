@@ -132,7 +132,7 @@ func (peer *Peer) BlockOut() {
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
 	peer.mu.Unlock()
-	peer.log()
+	fmt.Println(peer.log())
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
@@ -145,7 +145,7 @@ func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
 	for {
-		fmt.Println(peer.id)
+		//fmt.Println(peer.id)
 		if peer.checkBlockTimeout() {
 			peer.BlockOut()
 			peer.getNewBlockTimeout()
