@@ -183,7 +183,7 @@ func init() {
 		var peer = newPeer(i, state)
 		peerList.peers = append(peerList.peers, *peer)
 	}
-	fmt.Println(peerList.getPeerId())
+	//fmt.Println(peerList.getPeerId())
 	var timestamp = time.Now()
 	for _, peer := range peerList.peers {
 		peer.blockTimeStamp = timestamp
