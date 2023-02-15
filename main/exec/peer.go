@@ -145,8 +145,9 @@ func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
 	for {
-		//fmt.Println(peer.id)
+		fmt.Println(peer.id)
 		if peer.checkBlockTimeout() {
+			fmt.Println("block out enter")
 			peer.BlockOut()
 			peer.getNewBlockTimeout()
 		}
