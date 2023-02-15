@@ -139,7 +139,7 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 // 启动节点
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	fmt.Println(peer)
+	//fmt.Println(peer)
 	go func() {
 		for {
 			if peer.checkBlockTimeout() {
@@ -186,6 +186,7 @@ func init() {
 	for _, peer := range peerList.peers {
 		peer.blockTimeStamp = timestamp
 		peer.epochTimeStamp = timestamp
+		peer.peersIds = peerList.getPeerId()
 		peer.start()
 	}
 }
