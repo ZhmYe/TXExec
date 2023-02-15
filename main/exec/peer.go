@@ -170,8 +170,8 @@ func (peer *Peer) stop() {
 func init() {
 	peerList.config = config
 	var flag = false
-	var state = Normal
 	for i := 0; i < config.PeerNumber; i++ {
+		var state = Normal
 		if !flag && rand.Intn(config.PeerNumber) == 1 {
 			flag = true
 			state = Monitor
