@@ -73,7 +73,7 @@ func (peer *Peer) string() string {
 	return "peer: {\n" +
 		"	id: " + strconv.Itoa(peer.id) + "\n" +
 		"	state: " + state + "\n" +
-		"	block height: " + strconv.Itoa(peer.getBlockHeight())
+		"	block height: " + strconv.Itoa(peer.getBlockHeight()) + "\n}"
 }
 func (peer *Peer) log(content string) {
 	//var content = "(Log)" + peer.string()
@@ -147,7 +147,6 @@ func (peer *Peer) BlockOut() {
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
-	peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peer(id:" + strconv.Itoa(id) + ")...")
 	return peerList.peers[id].getBlockHeight()
 }
 
@@ -171,6 +170,7 @@ func (peer *Peer) start() {
 			if peer.checkEpochTimeout() {
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
+				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
 					heightMap[id] = height
