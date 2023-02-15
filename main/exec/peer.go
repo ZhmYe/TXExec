@@ -149,6 +149,7 @@ func (peer *Peer) start() {
 			if peer.state == Monitor {
 				if peer.checkEpochTimeout() {
 					var heightMap map[int]int
+					heightMap = make(map[int]int)
 					for _, id := range peer.peersIds {
 						var height = peer.sendCheckBlockHeight(id)
 						heightMap[id] = height
