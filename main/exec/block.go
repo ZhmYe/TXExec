@@ -11,11 +11,11 @@ const (
 
 type Block struct {
 	mu    sync.Mutex // 并发
-	txs   []*Tx      // 交易
+	txs   []Tx       // 交易
 	state BlockState // 区块是否已被执行
 }
 
-func NewBlock(txs []*Tx) *Block {
+func NewBlock(txs []Tx) *Block {
 	block := new(Block)
 	block.mu.Lock()
 	block.txs = txs
