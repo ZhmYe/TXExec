@@ -113,8 +113,8 @@ func (peer *Peer) getNewBlockTimeout() {
 
 // 是否需要出块
 func (peer *Peer) checkBlockTimeout() bool {
-	fmt.Println(time.Since(peer.blockTimeStamp))
-	fmt.Println(peer.blockTimeout)
+	//fmt.Println(time.Since(peer.blockTimeStamp))
+	//fmt.Println(peer.blockTimeout)
 	return time.Since(peer.blockTimeStamp) >= peer.blockTimeout
 }
 func (peer *Peer) updateEpochTimeStamp() {
@@ -140,6 +140,7 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 func peerImpl(peer *Peer) {
 	fmt.Println(peer.log())
 	for {
+		fmt.Println(peer.id)
 		if peer.checkBlockTimeout() {
 			peer.BlockOut()
 			peer.getNewBlockTimeout()
@@ -195,8 +196,5 @@ func init() {
 		peer.peersIds = peerList.getPeerId()
 		var tmp = peer
 		go tmp.start()
-	}
-	for {
-		continue
 	}
 }
