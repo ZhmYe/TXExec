@@ -139,8 +139,8 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 // 启动节点
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	fmt.Println(peer.log())
 	for {
+		fmt.Println(peer.log())
 		if peer.checkBlockTimeout() {
 			peer.BlockOut()
 			peer.getNewBlockTimeout()
