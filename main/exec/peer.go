@@ -196,4 +196,7 @@ func init() {
 		var tmp = peer
 		go tmp.start()
 	}
+	for {
+		continue
+	}
 }
