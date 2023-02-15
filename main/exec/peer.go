@@ -190,6 +190,7 @@ func init() {
 		peer.blockTimeStamp = timestamp
 		peer.epochTimeStamp = timestamp
 		peer.peersIds = peerList.getPeerId()
-		go peer.start()
+		var tmp = peer
+		go tmp.start()
 	}
 }
