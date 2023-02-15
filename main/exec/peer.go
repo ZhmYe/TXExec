@@ -154,7 +154,7 @@ func peerImpl(peer *Peer) {
 				}
 			}
 		}
-		break
+		time.Sleep(time.Duration(50) * time.Millisecond)
 	}
 }
 
