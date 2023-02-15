@@ -82,7 +82,7 @@ func (peer *Peer) log(content string) {
 		fmt.Println(err)
 	}
 	defer file.Close()
-	_, err = file.WriteString(content)
+	_, err = file.WriteString(content + "\n")
 	if err != nil {
 		fmt.Println(err)
 	}
