@@ -137,7 +137,10 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 	fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peer(id:" + strconv.Itoa(id) + ")...")
 	return peerList.peers[id].getBlockHeight()
 }
-func peerImpl(peer *Peer) {
+
+// 启动节点
+func (peer *Peer) start() {
+	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
 	for {
 		fmt.Println(peer.id)
@@ -157,12 +160,6 @@ func peerImpl(peer *Peer) {
 		}
 		time.Sleep(time.Duration(50) * time.Millisecond)
 	}
-}
-
-// 启动节点
-func (peer *Peer) start() {
-	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	peerImpl(peer)
 }
 
 // 停止节点
