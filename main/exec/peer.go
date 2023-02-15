@@ -77,7 +77,7 @@ func (peer *Peer) string() string {
 }
 func (peer *Peer) log(content string) {
 	//var content = "(Log)" + peer.string()
-	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		fmt.Println(err)
 	}
