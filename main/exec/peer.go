@@ -130,6 +130,7 @@ func (peer *Peer) BlockOut() {
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
+	peer.mu.Unlock()
 	peer.log()
 
 }
