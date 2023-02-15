@@ -14,7 +14,7 @@ type Config struct {
 	HotKeyRate   float64
 	StdDiff      float64
 	PeerNumber   int // 节点数量
-	epochTimeout time.Duration
+	EpochTimeout time.Duration
 }
 
 var config = Config{
@@ -27,5 +27,5 @@ var config = Config{
 	HotKeyRate:   0.6,
 	StdDiff:      10000.0,
 	PeerNumber:   4,
-	epochTimeout: time.Duration(400) * time.Millisecond,
+	EpochTimeout: time.Duration(400) * time.Millisecond,
 }

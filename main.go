@@ -1,11 +1,7 @@
 package TXExec
 
-import (
-	"math/rand"
-	"time"
-)
+import "TXExec/exec"
 
 func main() {
-	rand.Seed(time.Now().Unix())
-
+	exec.Init()
 }

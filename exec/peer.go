@@ -52,6 +52,32 @@ type Peer struct {
 	blockTimeStamp    time.Time       // 最后一次出块的时间
 }
 
+func newPeer(id int, state State) *Peer {
+	var peer = new(Peer)
+	peer.id = id
+	peer.state = state
+	peer.epochTimeout = time.Duration(400) * time.Millisecond
+	//peer.epochTimeStamp = time.Now()
+	peer.getNewBlockTimeout()
+	peer.NotExecBlockIndex = 0
+	return peer
+}
+func (peer *Peer) toString() string {
+	var state string
+	if peer.state == Monitor {
+		state = "Monitor"
+	} else {
+		state = "Normal"
+	}
+	return "peer: {\n" +
+		"	id: " + strconv.Itoa(peer.id) + "\n" +
+		"	state: " + state + "\n" +
+		"	block height: " + strconv.Itoa(peer.getBlockHeight())
+}
+func (peer *Peer) log() string {
+	return "(Log)" + peer.toString()
+}
+
 // 获取块高
 func (peer *Peer) getBlockHeight() int {
 	return len(peer.blocks) - peer.NotExecBlockIndex
@@ -95,13 +121,14 @@ func (peer *Peer) updateEpochTimeStamp() {
 
 // 是否需要出块
 func (peer *Peer) checkEpochTimeout() bool {
-	return time.Since(peer.blockTimeStamp) >= peer.blockTimeout
+	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut() {
 	var tx = GenTxSet()
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
+	peer.log()
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
@@ -110,8 +137,9 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 }
 
 // 启动节点
-func (peer *Peer) start(config Config) {
-	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+func (peer *Peer) start() {
+	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...\n")
+	fmt.Println(peer)
 	go func() {
 		for {
 			if peer.checkBlockTimeout() {
@@ -137,4 +165,27 @@ func (peer *Peer) stop() {
 	peer.state = Dead
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
+}
+func init() {
+	peerList.config = config
+	var flag = false
+	var state = Normal
+	for i := 0; i < config.PeerNumber; i++ {
+		if !flag && rand.Intn(config.PeerNumber) == 1 {
+			flag = true
+			state = Monitor
+		}
+		if !flag && i == config.PeerNumber-1 {
+			state = Monitor
+			flag = true
+		}
+		var peer = newPeer(i, state)
+		peerList.peers = append(peerList.peers, *peer)
+	}
+	var timestamp = time.Now()
+	for _, peer := range peerList.peers {
+		peer.blockTimeStamp = timestamp
+		peer.epochTimeStamp = timestamp
+		peer.start()
+	}
 }
