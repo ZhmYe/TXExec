@@ -77,7 +77,7 @@ func (peer *Peer) string() string {
 }
 func (peer *Peer) log(content string) {
 	//var content = "(Log)" + peer.string()
-	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_CREATE, 0)
+	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_CREATE|os.O_RDWR, 0)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -153,10 +153,10 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 
 // 启动节点
 func (peer *Peer) start() {
-	_, err := os.Create("log/peer_" + strconv.Itoa(peer.id) + ".log")
-	if err != nil {
-		fmt.Println(err)
-	}
+	//_, err := os.Create("log/peer_" + strconv.Itoa(peer.id) + ".log")
+	//if err != nil {
+	//fmt.Println(err)
+	//}
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.string())
