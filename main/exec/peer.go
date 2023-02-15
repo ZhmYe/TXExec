@@ -142,12 +142,12 @@ func (peer *Peer) start() {
 	fmt.Println(peer.log())
 	go func() {
 		for {
+			fmt.Println(peer.checkBlockTimeout())
 			if peer.checkBlockTimeout() {
 				peer.BlockOut()
 				peer.getNewBlockTimeout()
 			}
 			if peer.state == Monitor {
-				fmt.Println(peer.checkBlockTimeout())
 				if peer.checkEpochTimeout() {
 					var heightMap map[int]int
 					heightMap = make(map[int]int)
