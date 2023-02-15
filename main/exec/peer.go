@@ -147,7 +147,6 @@ func (peer *Peer) start() {
 	for {
 		fmt.Println(peer.id)
 		if peer.checkBlockTimeout() {
-			fmt.Println("block out enter")
 			peer.BlockOut()
 			peer.getNewBlockTimeout()
 		}
