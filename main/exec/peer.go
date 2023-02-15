@@ -145,6 +145,8 @@ func (peer *Peer) start() {
 			if peer.checkBlockTimeout() {
 				peer.BlockOut()
 				peer.getNewBlockTimeout()
+			} else {
+				fmt.Println("not reach block timeout")
 			}
 			if peer.state == Monitor {
 				if peer.checkEpochTimeout() {
