@@ -3,6 +3,7 @@ package exec
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -74,8 +75,14 @@ func (peer *Peer) string() string {
 		"	state: " + state + "\n" +
 		"	block height: " + strconv.Itoa(peer.getBlockHeight())
 }
-func (peer *Peer) log() string {
-	return "(Log)" + peer.string()
+func (peer *Peer) log(content string) {
+	//var content = "(Log)" + peer.string()
+	file, err := os.OpenFile("peer_"+strconv.Itoa(peer.id)+".log", os.O_CREATE, 0)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+	_, err = file.WriteString(content)
 }
 
 // 获取块高
@@ -132,18 +139,25 @@ func (peer *Peer) BlockOut() {
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
 	peer.mu.Unlock()
-	fmt.Println(peer.log())
+	fmt.Println(peer.string())
+	peer.log(peer.string())
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
-	fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peer(id:" + strconv.Itoa(id) + ")...")
+	peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peer(id:" + strconv.Itoa(id) + ")...")
 	return peerList.peers[id].getBlockHeight()
 }
 
 // 启动节点
 func (peer *Peer) start() {
+	_, err := os.Create("peer_" + strconv.Itoa(peer.id) + ".log")
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	fmt.Println(peer.log())
+	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+	fmt.Println(peer.string())
+	peer.log(peer.string())
 	for {
 		//fmt.Println(peer.id)
 		if peer.checkBlockTimeout() {
@@ -168,6 +182,7 @@ func (peer *Peer) start() {
 func (peer *Peer) stop() {
 	peer.mu.Lock()
 	peer.state = Dead
+	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
 }
