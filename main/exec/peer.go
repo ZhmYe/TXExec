@@ -144,20 +144,20 @@ func (peer *Peer) start() {
 	fmt.Println(peer.log())
 	for {
 		fmt.Println(peer.id)
-		if peer.checkBlockTimeout() {
-			peer.BlockOut()
-			peer.getNewBlockTimeout()
-		}
-		if peer.state == Monitor {
-			if peer.checkEpochTimeout() {
-				var heightMap map[int]int
-				heightMap = make(map[int]int)
-				for _, id := range peer.peersIds {
-					var height = peer.sendCheckBlockHeight(id)
-					heightMap[id] = height
-				}
-			}
-		}
+		//if peer.checkBlockTimeout() {
+		//	peer.BlockOut()
+		//	peer.getNewBlockTimeout()
+		//}
+		//if peer.state == Monitor {
+		//	if peer.checkEpochTimeout() {
+		//		var heightMap map[int]int
+		//		heightMap = make(map[int]int)
+		//		for _, id := range peer.peersIds {
+		//			var height = peer.sendCheckBlockHeight(id)
+		//			heightMap[id] = height
+		//		}
+		//	}
+		//}
 		time.Sleep(time.Duration(50) * time.Millisecond)
 	}
 }
