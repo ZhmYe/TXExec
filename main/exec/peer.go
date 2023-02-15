@@ -135,32 +135,30 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 	fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peer(id:" + strconv.Itoa(id) + ")...")
 	return peerList.peers[id].getBlockHeight()
 }
+func peerImpl(peer *Peer) {
+	for {
+		if peer.checkBlockTimeout() {
+			peer.BlockOut()
+			peer.getNewBlockTimeout()
+		}
+		if peer.state == Monitor {
+			if peer.checkEpochTimeout() {
+				var heightMap map[int]int
+				heightMap = make(map[int]int)
+				for _, id := range peer.peersIds {
+					var height = peer.sendCheckBlockHeight(id)
+					heightMap[id] = height
+				}
+			}
+		}
+	}
+}
 
 // 启动节点
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
-	go func() {
-		for {
-			if peer.id == 3 {
-				fmt.Println(111)
-			}
-			if peer.checkBlockTimeout() {
-				peer.BlockOut()
-				peer.getNewBlockTimeout()
-			}
-			if peer.state == Monitor {
-				if peer.checkEpochTimeout() {
-					var heightMap map[int]int
-					heightMap = make(map[int]int)
-					for _, id := range peer.peersIds {
-						var height = peer.sendCheckBlockHeight(id)
-						heightMap[id] = height
-					}
-				}
-			}
-		}
-	}()
+	go peerImpl(peer)
 }
 
 // 停止节点
