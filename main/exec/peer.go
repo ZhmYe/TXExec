@@ -62,7 +62,7 @@ func newPeer(id int, state State) *Peer {
 	peer.NotExecBlockIndex = 0
 	return peer
 }
-func (peer *Peer) toString() string {
+func (peer *Peer) string() string {
 	var state string
 	if peer.state == Monitor {
 		state = "Monitor"
@@ -75,7 +75,7 @@ func (peer *Peer) toString() string {
 		"	block height: " + strconv.Itoa(peer.getBlockHeight())
 }
 func (peer *Peer) log() string {
-	return "(Log)" + peer.toString()
+	return "(Log)" + peer.string()
 }
 
 // 获取块高
@@ -138,7 +138,7 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 
 // 启动节点
 func (peer *Peer) start() {
-	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...\n")
+	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer)
 	go func() {
 		for {

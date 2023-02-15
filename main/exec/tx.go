@@ -33,8 +33,8 @@ func Init() {
 		// kmap[key] = len(karr)
 		karr = append(karr, key)
 	}
-	take := time.Since(t0)
-	fmt.Println("take:", take) // 统计初始化插入key,value的时间
+	//take := time.Since(t0)
+	//fmt.Println("take:", take) // 统计初始化插入key,value的时间
 }
 
 // Read 从leveldb中读
