@@ -142,7 +142,6 @@ func peerImpl(peer *Peer) {
 			peer.getNewBlockTimeout()
 		}
 		if peer.state == Monitor {
-			fmt.Println(111)
 			if peer.checkEpochTimeout() {
 				var heightMap map[int]int
 				heightMap = make(map[int]int)

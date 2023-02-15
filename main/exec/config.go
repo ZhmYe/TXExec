@@ -26,6 +26,6 @@ var config = Config{
 	HotKey:       0.2,
 	HotKeyRate:   0.6,
 	StdDiff:      10000.0,
-	PeerNumber:   1,
+	PeerNumber:   4,
 	EpochTimeout: time.Duration(400) * time.Millisecond,
 }
