@@ -141,14 +141,10 @@ func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	fmt.Println(peer.log())
 	go func() {
-		var debug = 0
 		for {
-			debug += 1
 			if peer.checkBlockTimeout() {
 				peer.BlockOut()
 				peer.getNewBlockTimeout()
-			} else {
-				fmt.Println(strconv.Itoa(debug))
 			}
 			if peer.state == Monitor {
 				if peer.checkEpochTimeout() {
@@ -160,6 +156,7 @@ func (peer *Peer) start() {
 					}
 				}
 			}
+			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
 	}()
 }
