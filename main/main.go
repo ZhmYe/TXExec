@@ -1,4 +1,4 @@
-package TXExec
+package main
 
 import "TXExec/exec"
 
