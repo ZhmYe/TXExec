@@ -154,6 +154,7 @@ func peerImpl(peer *Peer) {
 				}
 			}
 		}
+		break
 	}
 }
 
