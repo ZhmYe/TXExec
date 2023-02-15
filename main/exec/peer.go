@@ -191,6 +191,7 @@ func init() {
 		peer.epochTimeStamp = timestamp
 		peer.peersIds = peerList.getPeerId()
 		go func() {
+			fmt.Println(peer.id)
 			peer.start()
 		}()
 	}
