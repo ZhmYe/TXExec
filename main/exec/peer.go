@@ -147,6 +147,7 @@ func (peer *Peer) start() {
 				peer.getNewBlockTimeout()
 			}
 			if peer.state == Monitor {
+				fmt.Println(peer.checkBlockTimeout())
 				if peer.checkEpochTimeout() {
 					var heightMap map[int]int
 					heightMap = make(map[int]int)
@@ -156,7 +157,6 @@ func (peer *Peer) start() {
 					}
 				}
 			}
-			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
 	}()
 }
