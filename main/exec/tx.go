@@ -85,8 +85,8 @@ func getRandomKeyWithHot() string {
 	// } else {
 	// 	idx = rand.Intn(len(karr)-n) + n
 	// }
+	fmt.Println(111)
 	idx := getNormalRandom()
-	fmt.Println(idx)
 	return karr[idx]
 }
 
@@ -112,7 +112,8 @@ func GenTxSet() []*Tx {
 		ops := make([]Op, m)
 		for j := range ops {
 			r := rand.Float64()
-			fmt.Println(j)
+			fmt.Println(r)
+			fmt.Println(wrate)
 			if r < wrate {
 				// 生成一笔写操作
 				ops[j].Type = OpWrite
