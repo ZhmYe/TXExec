@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -85,6 +86,7 @@ func getRandomKeyWithHot() string {
 	// 	idx = rand.Intn(len(karr)-n) + n
 	// }
 	idx := getNormalRandom()
+	fmt.Println(idx)
 	return karr[idx]
 }
 
@@ -103,18 +105,19 @@ func getNormalRandom() int {
 func GenTxSet() []*Tx {
 	n := config.BatchTxNum
 	m := config.OpsPerTx
-	//valFormat := "%0" + strconv.Itoa(config.ValueSize) + "%s" // todo
+	valFormat := "%0" + strconv.Itoa(config.ValueSize) + "%s" // todo
 	wrate := config.WRate
 	txs := make([]*Tx, n)
 	for i := range txs {
 		ops := make([]Op, m)
 		for j := range ops {
+			fmt.Println(j)
 			r := rand.Float64()
 			if r < wrate {
 				// 生成一笔写操作
 				ops[j].Type = OpWrite
 				ops[j].Key = getRandomKeyWithHot()
-				ops[j].Val = uuid.NewString()
+				ops[j].Val = fmt.Sprintf(valFormat, uuid.NewString()) // todo
 			} else {
 				// 生成一笔读操作
 				ops[j].Type = OpRead
