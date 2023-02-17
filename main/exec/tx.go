@@ -101,12 +101,12 @@ func getNormalRandom() int {
 }
 
 // GenTxSet 生成交易
-func GenTxSet() []Tx {
+func GenTxSet() []*Tx {
 	n := config.BatchTxNum
 	m := config.OpsPerTx
 	valFormat := "%0" + strconv.Itoa(config.ValueSize) + "%s" // todo
 	wrate := config.WRate
-	txs := make([]Tx, n)
+	txs := make([]*Tx, n)
 	for i := range txs {
 		ops := make([]Op, m)
 		for j := range ops {
@@ -122,7 +122,7 @@ func GenTxSet() []Tx {
 				ops[j].Key = getRandomKeyWithHot()
 			}
 		}
-		txs[i] = Tx{Ops: ops}
+		txs[i] = &Tx{Ops: ops}
 	}
 	return txs
 }
