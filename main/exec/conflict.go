@@ -47,9 +47,9 @@ func solveConflict(blocks []Block) {
 	//fmt.Println(lengthAfterSolveByBaseLine)
 	//fmt.Println(lengthAfterSolveByIndexChoose)
 	fmt.Print("abort rate by baseline:")
-	fmt.Println("%T", lengthAfterSolveByBaseLine/lengthBeforeSolve)
+	fmt.Println(float64(lengthAfterSolveByBaseLine) / float64(lengthBeforeSolve))
 	fmt.Print("abort rate by IndexChoose:")
-	fmt.Println("%T", lengthAfterSolveByIndexChoose/lengthAfterSolveByIndexChoose)
+	fmt.Println(float64(lengthAfterSolveByIndexChoose) / float64(lengthBeforeSolve))
 }
 func Test() {
 	blocks := generateBlocks(config.PeerNumber)
