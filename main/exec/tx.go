@@ -87,7 +87,7 @@ func getRandomKeyWithHot() string {
 	// }
 	//fmt.Println(111)
 	idx := getNormalRandom()
-	fmt.Println(idx)
+	//fmt.Println(idx)
 	return karr[idx]
 }
 

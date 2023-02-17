@@ -43,6 +43,9 @@ func solveConflict(blocks []Block) {
 	for _, value := range resultByIndexChoose {
 		lengthAfterSolveByIndexChoose += len(value)
 	}
+	fmt.Println(lengthBeforeSolve)
+	fmt.Println(lengthAfterSolveByBaseLine)
+	fmt.Println(lengthAfterSolveByIndexChoose)
 	fmt.Print("abort rate by baseline:")
 	fmt.Println(lengthAfterSolveByBaseLine / lengthBeforeSolve)
 	fmt.Print("abort rate by IndexChoose:")
