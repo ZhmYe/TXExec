@@ -108,9 +108,9 @@ func GenTxSet() []*Tx {
 	wrate := config.WRate
 	txs := make([]*Tx, n)
 	for i := range txs {
-		fmt.Println(i)
 		ops := make([]Op, m)
 		for j := range ops {
+			fmt.Println(j)
 			r := rand.Float64()
 			if r < wrate {
 				// 生成一笔写操作
