@@ -3,8 +3,8 @@ package main
 import "TXExec/exec"
 
 func main() {
-	//exec.Init()
-	exec.Test()
+	exec.PeerInit()
+	//exec.Test()
 	for {
 		continue
 	}

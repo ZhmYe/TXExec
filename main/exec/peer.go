@@ -209,7 +209,7 @@ func (peer *Peer) stop() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
 }
-func init() {
+func PeerInit() {
 	peerList.config = config
 	var flag = false
 	for i := 0; i < config.PeerNumber; i++ {
