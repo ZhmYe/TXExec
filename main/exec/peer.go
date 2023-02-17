@@ -155,8 +155,8 @@ func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut() {
-	//var tx = GenTxSet()
-	var tx = make([]*Tx, 0)
+	var tx = GenTxSet()
+	//var tx = make([]Tx, 0)
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
