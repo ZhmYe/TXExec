@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/syndtr/goleveldb/leveldb"
 	"math/rand"
 	"strconv"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var (
@@ -23,18 +25,17 @@ func Init() {
 	if err != nil {
 		panic("open db failed!")
 	}
-	// kmap = make(map[string]int, config.OriginKeys)
-	karr = make([]string, 0, config.OriginKeys) // 根据初始配置的key数量生成Key array
-	//t0 := time.Now()
-	for i := 0; i <= c
-	onfig.OriginKeys; i++ {
+	// kmap = make(map[string]int, KConfig.OriginKeys)
+	karr = make([]string, 0, KConfig.OriginKeys) // 根据初始配置的key数量生成Key array
+	t0 := time.Now()
+	for i := 0; i <= KConfig.OriginKeys; i++ {
 		key := uuid.NewString() // 生成key,uuid类型
 		Write(key, "")          // 向leveldb中插入key,value("")
 		// kmap[key] = len(karr)
 		karr = append(karr, key)
 	}
-	//take := time.Since(t0)
-	//fmt.Println("take:", take) // 统计初始化插入key,value的时间
+	take := time.Since(t0)
+	fmt.Println("take:", take) // 统计初始化插入key,value的时间
 }
 
 // Read 从leveldb中读
@@ -77,9 +78,9 @@ type Tx struct {
 // 根据热点率获取随机的key todo
 func getRandomKeyWithHot() string {
 	// r := rand.Float64()
-	// n := int(float64(len(karr)) * config.HotKey)
+	// n := int(float64(len(karr)) * KConfig.HotKey)
 	// idx := 0
-	// if r < config.HotKeyRate {
+	// if r < KConfig.HotKeyRate {
 	// 	idx = rand.Intn(n)
 	// } else {
 	// 	idx = rand.Intn(len(karr)-n) + n
@@ -92,7 +93,7 @@ func getRandomKeyWithHot() string {
 func getNormalRandom() int {
 	u := len(karr) / 2
 	for {
-		x := int(rand.NormFloat64()*config.StdDiff) + u
+		x := int(rand.NormFloat64()*KConfig.StdDiff) + u
 		if x >= 0 && x < len(karr) {
 			return x
 		}
@@ -101,10 +102,10 @@ func getNormalRandom() int {
 
 // GenTxSet 生成交易
 func GenTxSet() []*Tx {
-	n := config.BatchTxNum
-	m := config.OpsPerTx
-	valFormat := "%0" + strconv.Itoa(config.ValueSize) + "%s" // todo
-	wrate := config.WRate
+	n := KConfig.BatchTxNum
+	m := KConfig.OpsPerTx
+	valFormat := "%0" + strconv.Itoa(KConfig.ValueSize) + "%s" // todo
+	wrate := KConfig.WRate
 	txs := make([]*Tx, n)
 	for i := range txs {
 		ops := make([]Op, m)
