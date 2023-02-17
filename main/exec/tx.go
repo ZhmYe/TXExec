@@ -25,10 +25,10 @@ func Init() {
 	if err != nil {
 		panic("open db failed!")
 	}
-	// kmap = make(map[string]int, KConfig.OriginKeys)
-	karr = make([]string, 0, KConfig.OriginKeys) // 根据初始配置的key数量生成Key array
+	// kmap = make(map[string]int, config.OriginKeys)
+	karr = make([]string, 0, config.OriginKeys) // 根据初始配置的key数量生成Key array
 	t0 := time.Now()
-	for i := 0; i <= KConfig.OriginKeys; i++ {
+	for i := 0; i <= config.OriginKeys; i++ {
 		key := uuid.NewString() // 生成key,uuid类型
 		Write(key, "")          // 向leveldb中插入key,value("")
 		// kmap[key] = len(karr)
@@ -78,9 +78,9 @@ type Tx struct {
 // 根据热点率获取随机的key todo
 func getRandomKeyWithHot() string {
 	// r := rand.Float64()
-	// n := int(float64(len(karr)) * KConfig.HotKey)
+	// n := int(float64(len(karr)) * config.HotKey)
 	// idx := 0
-	// if r < KConfig.HotKeyRate {
+	// if r < config.HotKeyRate {
 	// 	idx = rand.Intn(n)
 	// } else {
 	// 	idx = rand.Intn(len(karr)-n) + n
@@ -93,7 +93,7 @@ func getRandomKeyWithHot() string {
 func getNormalRandom() int {
 	u := len(karr) / 2
 	for {
-		x := int(rand.NormFloat64()*KConfig.StdDiff) + u
+		x := int(rand.NormFloat64()*config.StdDiff) + u
 		if x >= 0 && x < len(karr) {
 			return x
 		}
@@ -102,10 +102,10 @@ func getNormalRandom() int {
 
 // GenTxSet 生成交易
 func GenTxSet() []*Tx {
-	n := KConfig.BatchTxNum
-	m := KConfig.OpsPerTx
-	valFormat := "%0" + strconv.Itoa(KConfig.ValueSize) + "%s" // todo
-	wrate := KConfig.WRate
+	n := config.BatchTxNum
+	m := config.OpsPerTx
+	valFormat := "%0" + strconv.Itoa(config.ValueSize) + "%s" // todo
+	wrate := config.WRate
 	txs := make([]*Tx, n)
 	for i := range txs {
 		ops := make([]Op, m)
