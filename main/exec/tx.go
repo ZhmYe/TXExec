@@ -112,7 +112,7 @@ func GenTxSet() []*Tx {
 		ops := make([]Op, m)
 		for j := range ops {
 			r := rand.Float64()
-			//fmt.Println(r)
+			fmt.Println(r)
 			//fmt.Println(wrate)
 			if r < wrate {
 				// 生成一笔写操作
