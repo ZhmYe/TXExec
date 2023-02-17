@@ -108,6 +108,7 @@ func GenTxSet() []*Tx {
 	wrate := config.WRate
 	txs := make([]*Tx, n)
 	for i := range txs {
+		fmt.Println(i)
 		ops := make([]Op, m)
 		for j := range ops {
 			r := rand.Float64()
@@ -124,7 +125,6 @@ func GenTxSet() []*Tx {
 		}
 		txs[i] = &Tx{Ops: ops}
 	}
-	fmt.Println(len(txs))
 	return txs
 }
 
