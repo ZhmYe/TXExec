@@ -4,7 +4,7 @@ import "fmt"
 
 func generateBlocks(PeerNumber int) []Block {
 	var blocks = make([]Block, 0)
-	for i := 0; i <= PeerNumber; i++ {
+	for i := 0; i < PeerNumber; i++ {
 		var txs = GenTxSet()
 		block := NewBlock(txs)
 		blocks = append(blocks, *block)
@@ -27,7 +27,6 @@ func getFakeHashtable(block Block) map[string][]Op {
 func solveConflict(blocks []Block) {
 	hashTables := make([]map[string][]Op, 0)
 	lengthBeforeSolve := 0
-	fmt.Println(len(blocks))
 	for _, block := range blocks {
 		lengthBeforeSolve += len(block.txs) * config.OpsPerTx
 		hashtable := getFakeHashtable(block)
