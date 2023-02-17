@@ -27,8 +27,9 @@ func getFakeHashtable(block Block) map[string][]Op {
 func solveConflict(blocks []Block) {
 	hashTables := make([]map[string][]Op, 0)
 	lengthBeforeSolve := 0
+	fmt.Println(len(blocks))
 	for _, block := range blocks {
-		lengthBeforeSolve += len(block.txs)
+		lengthBeforeSolve += len(block.txs) * config.OpsPerTx
 		hashtable := getFakeHashtable(block)
 		hashTables = append(hashTables, hashtable)
 	}
