@@ -124,6 +124,7 @@ func GenTxSet() []*Tx {
 		}
 		txs[i] = &Tx{Ops: ops}
 	}
+	fmt.Println(len(txs))
 	return txs
 }
 
