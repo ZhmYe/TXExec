@@ -13,6 +13,7 @@ type Block struct {
 	mu    sync.Mutex // 并发
 	txs   []*Tx      // 交易
 	state BlockState // 区块是否已被执行
+	//hash  string     // 区块哈希
 }
 
 func NewBlock(txs []*Tx) *Block {

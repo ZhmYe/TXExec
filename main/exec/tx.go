@@ -26,7 +26,8 @@ func Init() {
 	// kmap = make(map[string]int, config.OriginKeys)
 	karr = make([]string, 0, config.OriginKeys) // 根据初始配置的key数量生成Key array
 	//t0 := time.Now()
-	for i := 0; i <= config.OriginKeys; i++ {
+	for i := 0; i <= c
+	onfig.OriginKeys; i++ {
 		key := uuid.NewString() // 生成key,uuid类型
 		Write(key, "")          // 向leveldb中插入key,value("")
 		// kmap[key] = len(karr)

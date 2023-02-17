@@ -1,11 +1,10 @@
 package main
 
-import (
-	"TXExec/exec"
-)
+import "TXExec/exec"
 
 func main() {
-	exec.Init()
+	//exec.Init()
+	exec.Test()
 	for {
 		continue
 	}

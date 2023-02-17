@@ -75,6 +75,25 @@ func (peer *Peer) string() string {
 		"	state: " + state + "\n" +
 		"	block height: " + strconv.Itoa(peer.getBlockHeight()) + "\n}"
 }
+
+// 获取当前epoch中的{state: op->op}
+func (peer *Peer) getHashTable() map[string][]Op {
+	//NotExecBlockIndex
+	// op : {type, key, value}
+	hashtable := make(map[string][]Op)
+	for i := peer.NotExecBlockIndex; i < len(peer.blocks); i++ {
+		tmpTx := peer.blocks[i].txs
+		for _, tx := range tmpTx {
+			for _, op := range tx.Ops {
+				if hashtable[op.Key] == nil {
+					hashtable[op.Key] = make([]Op, 0)
+				}
+				hashtable[op.Key] = append(hashtable[op.Key], op)
+			}
+		}
+	}
+	return hashtable
+}
 func (peer *Peer) log(content string) {
 	//var content = "(Log)" + peer.string()
 	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
@@ -175,6 +194,7 @@ func (peer *Peer) start() {
 					var height = peer.sendCheckBlockHeight(id)
 					heightMap[id] = height
 				}
+				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 			}
 		}
 		time.Sleep(time.Duration(50) * time.Millisecond)
