@@ -23,6 +23,7 @@ func Init() {
 	var err error
 	db, err = leveldb.OpenFile("levdb", nil)
 	if err != nil {
+		fmt.Println(err)
 		panic("open db failed!")
 	}
 	// kmap = make(map[string]int, config.OriginKeys)
