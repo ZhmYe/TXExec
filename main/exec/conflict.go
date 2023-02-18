@@ -13,7 +13,7 @@ func generateBlocks(PeerNumber int) []Block {
 }
 func getFakeHashtable(block Block) map[string][]Op {
 	hashtable := make(map[string][]Op)
-	length := 0
+	//length := 0
 	for _, tx := range block.txs {
 		for _, op := range tx.Ops {
 			if hashtable[op.Key] == nil {
@@ -22,10 +22,10 @@ func getFakeHashtable(block Block) map[string][]Op {
 			hashtable[op.Key] = append(hashtable[op.Key], op)
 		}
 	}
-	for _, v := range hashtable {
-		length += len(v)
-	}
-	fmt.Print(length)
+	//for _, v := range hashtable {
+	//	length += len(v)
+	//}
+	//fmt.Print(length)
 	return hashtable
 }
 
@@ -50,8 +50,8 @@ func solveConflict(blocks []Block) {
 	}
 	fmt.Print("total ops: ")
 	fmt.Println(lengthBeforeSolve)
-	//fmt.Println(lengthAfterSolveByBaseLine)
-	//fmt.Println(lengthAfterSolveByIndexChoose)
+	fmt.Println(lengthAfterSolveByBaseLine)
+	fmt.Println(lengthAfterSolveByIndexChoose)
 	fmt.Print("abort rate by baseline:")
 	fmt.Println(1 - float64(lengthAfterSolveByBaseLine)/float64(lengthBeforeSolve))
 	fmt.Print("abort rate by IndexChoose:")
