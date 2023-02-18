@@ -15,13 +15,13 @@ const (
 	IndexChoose
 )
 
-func newSolution(hashtable []map[string][]Op) Solution {
+func newSolution(hashtable []map[string][]Op) *Solution {
 	solution := new(Solution)
 	solution.peerNumber = len(hashtable)
 	solution.result = hashtable[0]
 	fmt.Println(getOpsNumber(solution.result))
 	solution.hashtable = hashtable
-	return *solution
+	return solution
 }
 func (solution *Solution) getResult(pattern SolvePattern) map[string][]Op {
 	for i := 1; i < solution.peerNumber; i++ {
