@@ -36,6 +36,7 @@ func getOpsNumber(a map[string][]Op) int {
 	return length
 }
 func (solution *Solution) combine(a map[string][]Op, b map[string][]Op, pattern SolvePattern) map[string][]Op {
+	fmt.Print("original length:")
 	fmt.Println(getOpsNumber(a) + getOpsNumber(b))
 	for key, _ := range b {
 		if a[key] == nil {
@@ -50,6 +51,7 @@ func (solution *Solution) combine(a map[string][]Op, b map[string][]Op, pattern 
 			}
 		}
 	}
+	fmt.Print("after:")
 	fmt.Println(getOpsNumber(a))
 	return a
 }
