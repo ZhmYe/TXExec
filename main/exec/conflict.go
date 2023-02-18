@@ -37,14 +37,14 @@ func solveConflict(blocks []Block) {
 		hashtable := getFakeHashtable(block)
 		hashTables = append(hashTables, hashtable)
 	}
-	solution := newSolution(hashTables)
-	resultByBaseLine := solution.getResult(Baseline)
+	solutionByBaseLine := newSolution(hashTables)
+	resultByBaseLine := solutionByBaseLine.getResult(Baseline)
 	lengthAfterSolveByBaseLine := 0
 	for _, value := range resultByBaseLine {
 		lengthAfterSolveByBaseLine += len(value)
 	}
-	solution = newSolution(hashTables)
-	resultByIndexChoose := solution.getResult(IndexChoose)
+	solutionByIndexChoose := newSolution(hashTables)
+	resultByIndexChoose := solutionByIndexChoose.getResult(IndexChoose)
 	lengthAfterSolveByIndexChoose := 0
 	for _, value := range resultByIndexChoose {
 		lengthAfterSolveByIndexChoose += len(value)
