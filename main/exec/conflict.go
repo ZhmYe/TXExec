@@ -43,6 +43,7 @@ func solveConflict(blocks []Block) {
 	for _, value := range resultByBaseLine {
 		lengthAfterSolveByBaseLine += len(value)
 	}
+	fmt.Println(getOpsNumber(hashTables[0]))
 	solutionByIndexChoose := newSolution(hashTables)
 	fmt.Println(getOpsNumber(solutionByIndexChoose.result))
 	resultByIndexChoose := solutionByIndexChoose.getResult(IndexChoose)
