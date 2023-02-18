@@ -39,18 +39,35 @@ const (
 	Dead
 )
 
+type Record struct {
+	id     int
+	blocks []Block
+	index  int // 还未被执行的区块index
+}
+
+func newRecord(id int) *Record {
+	var record = new(Record)
+	record.id = id
+	record.blocks = make([]Block, 0)
+	record.index = 0
+	return record
+}
+func (record *Record) appendBlock(block Block) {
+	record.blocks = append(record.blocks, block)
+}
+
 type Peer struct {
-	mu                sync.Mutex      // 并发
-	id                int             // 节点id
-	peersIds          []int           // 所有节点ID
-	state             State           // 当前节点状态：普通节点(Normal)或者统计状态节点(Monitor)
-	epochTimeout      time.Duration   // 每个epoch timeout
-	epochTimeStamp    time.Time       // 最后一次执行epoch的时间
-	blocks            []Block         // 当前节点所出的blocks
-	NotExecBlockIndex int             // 块高最小的还未被执行的块高度
-	epochState        map[int][]Block // 当前epoch所要执行的各个节点的块列表,key为节点id
-	blockTimeout      time.Duration   // 出块时间
-	blockTimeStamp    time.Time       // 最后一次出块的时间
+	mu                sync.Mutex     // 并发
+	id                int            // 节点id
+	peersIds          []int          // 所有节点ID
+	state             State          // 当前节点状态：普通节点(Normal)或者统计状态节点(Monitor)
+	epochTimeout      time.Duration  // 每个epoch timeout
+	epochTimeStamp    time.Time      // 最后一次执行epoch的时间
+	blocks            []Block        // 当前节点所出的blocks
+	NotExecBlockIndex int            // 块高最小的还未被执行的块高度
+	record            map[int]Record // 各个节点的出块记录, key为节点id
+	blockTimeout      time.Duration  // 出块时间
+	blockTimeStamp    time.Time      // 最后一次出块的时间
 }
 
 func newPeer(id int, state State) *Peer {
@@ -77,12 +94,13 @@ func (peer *Peer) string() string {
 }
 
 // 获取当前epoch中的{state: op->op}
-func (peer *Peer) getHashTable() map[string][]Op {
+func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	//NotExecBlockIndex
 	// op : {type, key, value}
 	hashtable := make(map[string][]Op)
-	for i := peer.NotExecBlockIndex; i < len(peer.blocks); i++ {
-		tmpTx := peer.blocks[i].txs
+	record := peer.record[id]
+	for i := 0; i < bias; i++ {
+		tmpTx := record.blocks[i].txs
 		for _, tx := range tmpTx {
 			for _, op := range tx.Ops {
 				if hashtable[op.Key] == nil {
@@ -93,6 +111,31 @@ func (peer *Peer) getHashTable() map[string][]Op {
 		}
 	}
 	return hashtable
+}
+func (peer *Peer) exec(epoch map[int]int) {
+	peer.mu.Lock()
+	hashTables := make([]map[string][]Op, 0)
+	for id, bias := range epoch {
+		hashTables = append(hashTables, peer.getHashTable(id, bias))
+	}
+	solution := newSolution(hashTables)
+	result := solution.getResult(IndexChoose)
+	//fmt.Println("Tx execution by result..")
+	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
+	for _, id := range peer.peersIds {
+		peerList.peers[id].UpdateIndexToRecord(id, epoch[id])
+	}
+	peer.NotExecBlockIndex += epoch[peer.id]
+	peer.mu.Unlock()
+
+}
+func (peer *Peer) RecordLog() string {
+	result := ""
+	for id, _ := range peer.record {
+		tmp := strconv.Itoa(id) + ":" + strconv.Itoa(peer.record[id].index) + "/" + strconv.Itoa(len(peer.record[id].blocks)) + "\n"
+		result += tmp
+	}
+	return result
 }
 func (peer *Peer) log(content string) {
 	//var content = "(Log)" + peer.string()
@@ -117,9 +160,20 @@ func (peer *Peer) getNotExecBlockIndex() int {
 	return peer.NotExecBlockIndex
 }
 
-// 根据节点id更新epochState内的块
-func (peer *Peer) updateEpochState(id int, blocks []Block) {
-	peer.epochState[id] = blocks
+// AppendBlockToRecord 根据节点id向record添加共识好的块
+func (peer *Peer) AppendBlockToRecord(id int, block Block) {
+	peer.mu.Lock()
+	record4id := peer.record[id]
+	record4id.appendBlock(block)
+	peer.record[id] = record4id
+	peer.mu.Unlock()
+}
+func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
+	peer.mu.Lock()
+	record4id := peer.record[id]
+	record4id.index += bias
+	peer.record[id] = record4id
+	peer.mu.Unlock()
 }
 
 // 更新区块状态
@@ -160,8 +214,14 @@ func (peer *Peer) BlockOut() {
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
+	for _, id := range peer.peersIds {
+		if id == peer.id {
+			continue
+		}
+		peerList.peers[id].AppendBlockToRecord(id, *newBlock)
+	}
 	peer.mu.Unlock()
-	fmt.Println(peer.string())
+	//fmt.Println(peer.string())
 	peer.log(peer.string())
 
 }
@@ -187,6 +247,8 @@ func (peer *Peer) start() {
 		}
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
+				peer.log(peer.RecordLog())
+				fmt.Println(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
@@ -194,6 +256,10 @@ func (peer *Peer) start() {
 					var height = peer.sendCheckBlockHeight(id)
 					heightMap[id] = height
 				}
+				for _, id := range peerList.getPeerId() {
+					peerList.peers[id].exec(heightMap)
+				}
+
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 			}
 		}
@@ -211,6 +277,10 @@ func (peer *Peer) stop() {
 }
 func PeerInit() {
 	peerList.config = config
+	record := make(map[int]Record, 0)
+	for _, id := range peerList.getPeerId() {
+		record[id] = *newRecord(id)
+	}
 	var flag = false
 	for i := 0; i < config.PeerNumber; i++ {
 		var state = Normal
@@ -231,6 +301,7 @@ func PeerInit() {
 		peer.blockTimeStamp = timestamp
 		peer.epochTimeStamp = timestamp
 		peer.peersIds = peerList.getPeerId()
+		peer.record = record
 		var tmp = peer
 		go tmp.start()
 	}
