@@ -67,6 +67,9 @@ func solveConflictIndexChoose(a []Op, b []Op) []Op {
 			result = append(result, shorter[index]) // longer/shorter/random
 		}
 	}
+	for index := len(shorter); index < len(longer); index++ {
+		result = append(result, longer[index])
+	}
 	return result
 
 }
