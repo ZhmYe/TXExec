@@ -19,7 +19,6 @@ func newSolution(hashtable []map[string][]Op) *Solution {
 	solution := new(Solution)
 	solution.peerNumber = len(hashtable)
 	solution.result = hashtable[0]
-	fmt.Println(getOpsNumber(solution.result))
 	solution.hashtable = hashtable
 	return solution
 }
