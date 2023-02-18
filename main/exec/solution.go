@@ -28,7 +28,15 @@ func (solution *Solution) getResult(pattern SolvePattern) map[string][]Op {
 	}
 	return solution.result
 }
+func getOpsNumber(a map[string][]Op) int {
+	length := 0
+	for _, value := range a {
+		length += len(value)
+	}
+	return length
+}
 func (solution *Solution) combine(a map[string][]Op, b map[string][]Op, pattern SolvePattern) map[string][]Op {
+	fmt.Println(getOpsNumber(a) + getOpsNumber(b))
 	for key, _ := range b {
 		if a[key] == nil {
 			a[key] = b[key]
@@ -42,6 +50,7 @@ func (solution *Solution) combine(a map[string][]Op, b map[string][]Op, pattern 
 			}
 		}
 	}
+	fmt.Println(getOpsNumber(a))
 	return a
 }
 func solveConflictBaseLine(a []Op, b []Op) []Op {
@@ -72,7 +81,6 @@ func solveConflictIndexChoose(a []Op, b []Op) []Op {
 	for index := len(shorter); index < len(longer); index++ {
 		result = append(result, longer[index])
 	}
-	fmt.Println(len(result))
 	return result
 
 }
