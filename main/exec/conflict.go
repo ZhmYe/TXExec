@@ -38,12 +38,12 @@ func solveConflict(blocks []Block) {
 		hashTables = append(hashTables, hashtable)
 	}
 	solutionByBaseLine := newSolution(hashTables)
+	solutionByIndexChoose := newSolution(hashTables)
 	resultByBaseLine := solutionByBaseLine.getResult(Baseline)
 	lengthAfterSolveByBaseLine := 0
 	for _, value := range resultByBaseLine {
 		lengthAfterSolveByBaseLine += len(value)
 	}
-	solutionByIndexChoose := newSolution(hashTables)
 	resultByIndexChoose := solutionByIndexChoose.getResult(IndexChoose)
 	lengthAfterSolveByIndexChoose := 0
 	for _, value := range resultByIndexChoose {
