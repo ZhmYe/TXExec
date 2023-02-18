@@ -1,7 +1,5 @@
 package exec
 
-import "fmt"
-
 type Solution struct {
 	peerNumber int
 	//pointMap   map[string][]Op
@@ -39,8 +37,8 @@ func getOpsNumber(a map[string][]Op) int {
 	return length
 }
 func (solution *Solution) combine(a map[string][]Op, b map[string][]Op, pattern SolvePattern) map[string][]Op {
-	fmt.Print("original length:")
-	fmt.Println(getOpsNumber(a) + getOpsNumber(b))
+	//fmt.Print("original length:")
+	//fmt.Println(getOpsNumber(a) + getOpsNumber(b))
 	for key, _ := range b {
 		if a[key] == nil {
 			a[key] = b[key]
@@ -54,8 +52,8 @@ func (solution *Solution) combine(a map[string][]Op, b map[string][]Op, pattern 
 			}
 		}
 	}
-	fmt.Print("after:")
-	fmt.Println(getOpsNumber(a))
+	//fmt.Print("after:")
+	//fmt.Println(getOpsNumber(a))
 	return a
 }
 func solveConflictBaseLine(a []Op, b []Op) []Op {

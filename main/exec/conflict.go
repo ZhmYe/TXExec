@@ -43,9 +43,9 @@ func solveConflict(blocks []Block) {
 	for _, value := range resultByBaseLine {
 		lengthAfterSolveByBaseLine += len(value)
 	}
-	fmt.Println(getOpsNumber(hashTables[0]))
+	//fmt.Println(getOpsNumber(hashTables[0]))
 	solutionByIndexChoose := newSolution(hashTables)
-	fmt.Println(getOpsNumber(solutionByIndexChoose.result))
+	//fmt.Println(getOpsNumber(solutionByIndexChoose.result))
 	resultByIndexChoose := solutionByIndexChoose.getResult(IndexChoose)
 	lengthAfterSolveByIndexChoose := 0
 	for _, value := range resultByIndexChoose {
@@ -53,8 +53,8 @@ func solveConflict(blocks []Block) {
 	}
 	fmt.Print("total ops: ")
 	fmt.Println(lengthBeforeSolve)
-	fmt.Println(lengthAfterSolveByBaseLine)
-	fmt.Println(lengthAfterSolveByIndexChoose)
+	//fmt.Println(lengthAfterSolveByBaseLine)
+	//fmt.Println(lengthAfterSolveByIndexChoose)
 	fmt.Print("abort rate by baseline:")
 	fmt.Println(1 - float64(lengthAfterSolveByBaseLine)/float64(lengthBeforeSolve))
 	fmt.Print("abort rate by IndexChoose:")
