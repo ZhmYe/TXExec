@@ -18,7 +18,10 @@ const (
 func newSolution(hashtable []map[string][]Op) *Solution {
 	solution := new(Solution)
 	solution.peerNumber = len(hashtable)
-	solution.result = hashtable[0]
+	solution.result = make(map[string][]Op, 0)
+	for k, v := range hashtable[0] {
+		solution.result[k] = v
+	}
 	solution.hashtable = hashtable
 	return solution
 }
