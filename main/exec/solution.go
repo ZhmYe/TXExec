@@ -1,5 +1,7 @@
 package exec
 
+import "fmt"
+
 type Solution struct {
 	peerNumber int
 	//pointMap   map[string][]Op
@@ -69,6 +71,9 @@ func solveConflictIndexChoose(a []Op, b []Op) []Op {
 	}
 	for index := len(shorter); index < len(longer); index++ {
 		result = append(result, longer[index])
+	}
+	if len(a)+len(b) < len(result) {
+		fmt.Println(111)
 	}
 	return result
 
