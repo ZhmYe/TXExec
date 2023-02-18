@@ -18,6 +18,7 @@ const (
 func newSolution(hashtable []map[string][]Op) Solution {
 	solution := new(Solution)
 	solution.peerNumber = len(hashtable)
+	fmt.Println(solution.peerNumber)
 	solution.result = hashtable[0]
 	solution.hashtable = hashtable
 	return *solution
