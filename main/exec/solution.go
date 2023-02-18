@@ -15,7 +15,7 @@ const (
 	IndexChoose
 )
 
-func newSolution(hashtable ...map[string][]Op) Solution {
+func newSolution(hashtable []map[string][]Op) Solution {
 	solution := new(Solution)
 	solution.peerNumber = len(hashtable)
 	solution.result = hashtable[0]
