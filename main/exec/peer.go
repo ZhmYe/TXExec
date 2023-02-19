@@ -85,6 +85,7 @@ func (peer *Peer) string() string {
 
 // 获取当前epoch中的{state: op->op}
 func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
+	fmt.Println(peer.id)
 	hashtable := make(map[string][]Op)
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
