@@ -101,7 +101,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
-	//peer.mu.Lock()
+	peer.mu.Lock()
 	hashTables := make([]map[string][]Op, 0)
 	for id, bias := range epoch {
 		hashTables = append(hashTables, peer.getHashTable(id, bias))
@@ -114,7 +114,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 		peer.UpdateIndexToRecord(id, epoch[id])
 	}
 	//peer.NotExecBlockIndex += epoch[peer.id]
-	//peer.mu.Unlock()
+	peer.mu.Unlock()
 
 }
 func (peer *Peer) RecordLog() string {
@@ -152,12 +152,12 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	peer.mu.Unlock()
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
-	peer.mu.Lock()
+	//peer.mu.Lock()
 	fmt.Println(strconv.Itoa(peer.id) + "update" + " " + strconv.Itoa(id))
 	record4id := peer.record[id]
 	record4id.index += bias
 	peer.record[id] = record4id
-	peer.mu.Unlock()
+	//peer.mu.Unlock()
 }
 
 // 更新区块状态
