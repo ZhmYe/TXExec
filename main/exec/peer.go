@@ -88,7 +88,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	hashtable := make(map[string][]Op)
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
-		tmpTx := record.blocks[i].txs
+		tmpTx := record.blocks[i+record.index].txs
 		for _, tx := range tmpTx {
 			for _, op := range tx.Ops {
 				if hashtable[op.Key] == nil {
@@ -98,6 +98,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 			}
 		}
 	}
+	fmt.Println(getOpsNumber(hashtable))
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
