@@ -70,13 +70,17 @@ type Peer struct {
 	blockTimeStamp    time.Time      // 最后一次出块的时间
 }
 
-func newPeer(id int, state State) *Peer {
+func newPeer(id int, state State, timestamp time.Time, peerId []int, record map[int]Record) *Peer {
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
 	peer.epochTimeout = time.Duration(400) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
+	peer.blockTimeStamp = timestamp
+	peer.epochTimeStamp = timestamp
+	peer.peersIds = peerId
+	peer.record = record
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
@@ -271,7 +275,7 @@ func (peer *Peer) start() {
 					heightMap[id] = height
 				}
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
-				for _, id := range peerList.getPeerId() {
+				for _, id := range peer.peersIds {
 					peerList.peers[id].exec(heightMap)
 				}
 
@@ -289,10 +293,27 @@ func (peer *Peer) stop() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
 }
+func generateIds(number int) []int {
+	result := make([]int, 0)
+	for i := 0; i < number; i++ {
+		result = append(result, i)
+	}
+	return result
+}
+func generateRecordMap(ids []int) map[int]Record {
+	record := make(map[int]Record, 0)
+	for _, id := range ids {
+		record[id] = *newRecord(id)
+	}
+	return record
+}
 func PeerInit() {
 	peerList.config = config
+	peerId := generateIds(config.PeerNumber)
+	record := generateRecordMap(peerId)
+	var timestamp = time.Now()
 	var flag = false
-	for i := 0; i < config.PeerNumber; i++ {
+	for i, id := range peerId {
 		var state = Normal
 		if !flag && rand.Intn(config.PeerNumber) == 1 {
 			flag = true
@@ -302,23 +323,11 @@ func PeerInit() {
 			state = Monitor
 			flag = true
 		}
-		var peer = newPeer(i, state)
+		var peer = newPeer(id, state, timestamp, peerId, record)
 		peerList.peers = append(peerList.peers, *peer)
 	}
 	//fmt.Println(peerList.getPeerId())
-	var timestamp = time.Now()
 	for _, peer := range peerList.peers {
-		peer.blockTimeStamp = timestamp
-		peer.epochTimeStamp = timestamp
-		peer.peersIds = peerList.getPeerId()
-		record := make(map[int]Record, 0)
-		for _, index := range peerList.getPeerId() {
-			record[index] = *newRecord(index)
-		}
-		peer.record = record
-		//for key, _ := range peer.record {
-		//	fmt.Println(key)
-		//}
 		var tmp = peer
 		go tmp.start()
 	}
