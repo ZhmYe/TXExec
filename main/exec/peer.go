@@ -85,8 +85,6 @@ func (peer *Peer) string() string {
 
 // 获取当前epoch中的{state: op->op}
 func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
-	//NotExecBlockIndex
-	// op : {type, key, value}
 	hashtable := make(map[string][]Op)
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
@@ -143,12 +141,9 @@ func (peer *Peer) log(content string) {
 
 // 获取块高
 func (peer *Peer) getBlockHeight() int {
+	fmt.Println(len(peer.blocks))
+	fmt.Println(peer.NotExecBlockIndex)
 	return len(peer.blocks) - peer.NotExecBlockIndex
-}
-
-// 获取块高最小的还未被执行的块高度
-func (peer *Peer) getNotExecBlockIndex() int {
-	return peer.NotExecBlockIndex
 }
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
