@@ -244,8 +244,9 @@ func (peer *Peer) start() {
 				}
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				for _, eachPeer := range peerMap {
-					tmp := eachPeer
-					go tmp.exec(heightMap)
+					//tmp := eachPeer
+					//go tmp.exec(heightMap)
+					eachPeer.exec(heightMap)
 				}
 
 			}
