@@ -9,27 +9,8 @@ import (
 	"time"
 )
 
-// PeerList 所有节点
-type PeerList struct {
-	config Config
-	peers  []Peer
-}
-
-// 返回节点个数
-func (peerList *PeerList) getPeerNumber() int {
-	return len(peerList.peers)
-}
-
-// 返回所有节点id
-func (peerList *PeerList) getPeerId() []int {
-	var result = make([]int, 0, peerList.config.PeerNumber)
-	for _, peer := range peerList.peers {
-		result = append(result, peer.id)
-	}
-	return result
-}
-
-var peerList = new(PeerList)
+// PeerMap 所有节点
+var peerMap = make(map[int]Peer)
 
 type State int
 
@@ -274,11 +255,12 @@ func (peer *Peer) start() {
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
+					fmt.Println("height:" + strconv.Itoa(height))
 					heightMap[id] = height
 				}
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
-				for _, id := range peer.peersIds {
-					peerList.peers[id].exec(heightMap)
+				for _, eachPeer := range peerMap {
+					eachPeer.exec(heightMap)
 				}
 
 			}
@@ -310,7 +292,7 @@ func generateRecordMap(ids []int) map[int]Record {
 	return record
 }
 func PeerInit() {
-	peerList.config = config
+	//peerList.config = config
 	peerId := generateIds(config.PeerNumber)
 	record := generateRecordMap(peerId)
 	var timestamp = time.Now()
@@ -326,10 +308,11 @@ func PeerInit() {
 			flag = true
 		}
 		var peer = newPeer(id, state, timestamp, peerId, record)
-		peerList.peers = append(peerList.peers, *peer)
+		//peerList.peers = append(peerList.peers, *peer)
+		peerMap[id] = *peer
 	}
 	//fmt.Println(peerList.getPeerId())
-	for _, peer := range peerList.peers {
+	for _, peer := range peerMap {
 		var tmp = peer
 		go tmp.start()
 	}
