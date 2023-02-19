@@ -77,11 +77,11 @@ func newPeer(id int, state State) *Peer {
 	peer.epochTimeout = time.Duration(400) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
-	record := make(map[int]Record, 0)
-	for _, index := range peerList.getPeerId() {
-		record[index] = *newRecord(index)
-	}
-	peer.record = record
+	//record := make(map[int]Record, 0)
+	//for _, index := range peerList.getPeerId() {
+	//	record[index] = *newRecord(index)
+	//}
+	//peer.record = record
 	peer.NotExecBlockIndex = 0
 	return peer
 }
@@ -302,6 +302,11 @@ func PeerInit() {
 		peer.blockTimeStamp = timestamp
 		peer.epochTimeStamp = timestamp
 		peer.peersIds = peerList.getPeerId()
+		record := make(map[int]Record, 0)
+		for _, index := range peerList.getPeerId() {
+			record[index] = *newRecord(index)
+		}
+		peer.record = record
 		for key, _ := range peer.record {
 			fmt.Println(key)
 		}
