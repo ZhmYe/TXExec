@@ -208,7 +208,7 @@ func (peer *Peer) BlockOut() {
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
-	for _, eachPeer := range peerList.peers {
+	for _, eachPeer := range peerMap {
 		if eachPeer.id == peer.id {
 			continue
 		}
@@ -226,7 +226,8 @@ func (peer *Peer) BlockOut() {
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
-	return peerList.peers[id].getBlockHeight()
+	tmp := peerMap[id]
+	return tmp.getBlockHeight()
 }
 
 // 启动节点
