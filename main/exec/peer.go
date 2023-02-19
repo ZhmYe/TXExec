@@ -121,7 +121,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 func (peer *Peer) RecordLog() string {
 	result := ""
 	for id, _ := range peer.record {
-		tmp := strconv.Itoa(id) + ":" + strconv.Itoa(peer.record[id].index) + "/" + strconv.Itoa(len(peer.record[id].blocks)) + "\n"
+		tmp := strconv.Itoa(id) + ":" + strconv.Itoa(peer.record[id].index) + "/" + strconv.Itoa(len(peer.record[id].blocks)) + " " + strconv.Itoa(len(peer.blocks)) + "\n"
 		result += tmp
 	}
 	return result
