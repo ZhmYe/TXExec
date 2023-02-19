@@ -168,6 +168,7 @@ func (peer *Peer) getNotExecBlockIndex() int {
 // AppendBlockToRecord 根据节点id向record添加共识好的块
 func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	peer.mu.Lock()
+	fmt.Println(111)
 	record4id := peer.record[id]
 	record4id.appendBlock(block)
 	peer.record[id] = record4id
