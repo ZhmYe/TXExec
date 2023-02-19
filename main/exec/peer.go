@@ -98,7 +98,6 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 			}
 		}
 	}
-	fmt.Println(getOpsNumber(hashtable))
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
@@ -109,7 +108,6 @@ func (peer *Peer) exec(epoch map[int]int) {
 	}
 	solution := newSolution(hashTables)
 	result := solution.getResult(IndexChoose)
-	fmt.Println("Peer" + strconv.Itoa(peer.id) + "Tx execution by result..")
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
@@ -149,9 +147,6 @@ func (peer *Peer) getBlockHeight() int {
 // AppendBlockToRecord 根据节点id向record添加共识好的块
 func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	peer.mu.Lock()
-	//for key, _ := range peer.record {
-	//	fmt.Println(key)
-	//}
 	record4id := peer.record[id]
 	record4id.appendBlock(block)
 	peer.record[id] = record4id
@@ -185,8 +180,6 @@ func (peer *Peer) getNewBlockTimeout() {
 
 // 是否需要出块
 func (peer *Peer) checkBlockTimeout() bool {
-	//fmt.Println(time.Since(peer.blockTimeStamp))
-	//fmt.Println(peer.blockTimeout)
 	return time.Since(peer.blockTimeStamp) >= peer.blockTimeout
 }
 func (peer *Peer) updateEpochTimeStamp() {
@@ -216,7 +209,6 @@ func (peer *Peer) BlockOut() {
 	//	peerList.peers[id].AppendBlockToRecord(peer.id, *newBlock)
 	//}
 	peer.mu.Unlock()
-	//fmt.Println(peer.string())
 	peer.log(peer.string())
 
 }
@@ -227,13 +219,9 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 
 // 启动节点
 func (peer *Peer) start() {
-	//_, err := os.Create("log/peer_" + strconv.Itoa(peer.id) + ".log")
-	//if err != nil {
-	//fmt.Println(err)
-	//}
-	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+	//fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	fmt.Println(peer.string())
+	//fmt.Println(peer.string())
 	peer.log(peer.string())
 	for {
 		//fmt.Println(peer.id)
@@ -247,7 +235,7 @@ func (peer *Peer) start() {
 				fmt.Println(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
-				fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
+				//fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
@@ -307,7 +295,6 @@ func PeerInit() {
 		//peerList.peers = append(peerList.peers, *peer)
 		peerMap[id] = *peer
 	}
-	//fmt.Println(peerList.getPeerId())
 	for _, peer := range peerMap {
 		var tmp = peer
 		go tmp.start()
