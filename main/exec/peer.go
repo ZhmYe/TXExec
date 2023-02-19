@@ -228,6 +228,7 @@ func (peer *Peer) start() {
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	//fmt.Println(peer.string())
 	peer.log(peer.string())
+	flag := false
 	for {
 		//fmt.Println(peer.id)
 		if peer.checkBlockTimeout() {
@@ -235,7 +236,8 @@ func (peer *Peer) start() {
 			peer.getNewBlockTimeout()
 		}
 		if peer.state == Monitor {
-			if peer.checkEpochTimeout() && !checkExecLock() {
+			if peer.checkEpochTimeout() {
+				flag = true
 				peer.log(peer.RecordLog())
 				fmt.Println(peer.RecordLog())
 				var heightMap map[int]int
@@ -248,10 +250,22 @@ func (peer *Peer) start() {
 					heightMap[id] = height
 				}
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
+				ch := make(chan int)
 				for _, eachPeer := range peerMap {
 					tmp := eachPeer
-					go tmp.exec(heightMap)
+					go func(tmp Peer) {
+						tmp.exec(heightMap)
+						ch <- 1
+					}(tmp)
 					//eachPeer.exec(heightMap)
+				}
+				finishCount := 0
+				for {
+					if finishCount == len(peer.peersIds) {
+						break
+					}
+					c := <-ch
+					finishCount += c
 				}
 
 			}
@@ -259,14 +273,15 @@ func (peer *Peer) start() {
 		time.Sleep(time.Duration(50) * time.Millisecond)
 	}
 }
-func checkExecLock() bool {
-	for _, peer := range peerMap {
-		if peer.execLock {
-			return true
-		}
-	}
-	return false
-}
+
+//func checkExecLock() bool {
+//	for _, peer := range peerMap {
+//		if peer.execLock {
+//			return true
+//		}
+//	}
+//	return false
+//}
 
 // 停止节点
 func (peer *Peer) stop() {
