@@ -101,7 +101,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
-	peer.mu.Lock()
+	//peer.mu.Lock()
 	hashTables := make([]map[string][]Op, 0)
 	for id, bias := range epoch {
 		hashTables = append(hashTables, peer.getHashTable(id, bias))
@@ -114,7 +114,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 		peer.UpdateIndexToRecord(id, epoch[id])
 	}
 	//peer.NotExecBlockIndex += epoch[peer.id]
-	peer.mu.Unlock()
+	//peer.mu.Unlock()
 
 }
 func (peer *Peer) RecordLog() string {
