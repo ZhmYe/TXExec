@@ -38,17 +38,17 @@ func (record *Record) appendBlock(block Block) {
 }
 
 type Peer struct {
-	mu                sync.Mutex     // 并发
-	id                int            // 节点id
-	peersIds          []int          // 所有节点ID
-	state             State          // 当前节点状态：普通节点(Normal)或者统计状态节点(Monitor)
-	epochTimeout      time.Duration  // 每个epoch timeout
-	epochTimeStamp    time.Time      // 最后一次执行epoch的时间
-	blocks            []Block        // 当前节点所出的blocks
-	NotExecBlockIndex int            // 块高最小的还未被执行的块高度
-	record            map[int]Record // 各个节点的出块记录, key为节点id
-	blockTimeout      time.Duration  // 出块时间
-	blockTimeStamp    time.Time      // 最后一次出块的时间
+	mu             sync.Mutex    // 并发
+	id             int           // 节点id
+	peersIds       []int         // 所有节点ID
+	state          State         // 当前节点状态：普通节点(Normal)或者统计状态节点(Monitor)
+	epochTimeout   time.Duration // 每个epoch timeout
+	epochTimeStamp time.Time     // 最后一次执行epoch的时间
+	//blocks            []Block        // 当前节点所出的blocks
+	//NotExecBlockIndex int            // 块高最小的还未被执行的块高度
+	record         map[int]Record // 各个节点的出块记录, key为节点id
+	blockTimeout   time.Duration  // 出块时间
+	blockTimeStamp time.Time      // 最后一次出块的时间
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int, record map[int]Record) *Peer {
@@ -67,7 +67,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, record map[
 	//	record[index] = *newRecord(index)
 	//}
 	//peer.record = record
-	peer.NotExecBlockIndex = 0
+	//peer.NotExecBlockIndex = 0
 	return peer
 }
 func (peer *Peer) string() string {
@@ -112,14 +112,14 @@ func (peer *Peer) exec(epoch map[int]int) {
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
 	}
-	peer.NotExecBlockIndex += epoch[peer.id]
+	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
 
 }
 func (peer *Peer) RecordLog() string {
 	result := ""
 	for id, _ := range peer.record {
-		tmp := strconv.Itoa(id) + ":" + strconv.Itoa(peer.record[id].index) + "/" + strconv.Itoa(len(peer.record[id].blocks)) + " " + strconv.Itoa(len(peer.blocks)) + "\n"
+		tmp := strconv.Itoa(id) + ":" + strconv.Itoa(peer.record[id].index) + "/" + strconv.Itoa(len(peer.record[id].blocks)) + "\n"
 		result += tmp
 	}
 	return result
@@ -139,9 +139,7 @@ func (peer *Peer) log(content string) {
 
 // 获取块高
 func (peer *Peer) getBlockHeight() int {
-	fmt.Println(len(peer.blocks))
-	fmt.Println(peer.NotExecBlockIndex)
-	return len(peer.blocks) - peer.NotExecBlockIndex
+	return len(peer.record[peer.id].blocks) - peer.record[peer.id].index
 }
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
@@ -161,14 +159,14 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 }
 
 // 更新区块状态
-func (peer *Peer) updateBlockState(length int) {
-	peer.mu.Lock()
-	var startIndex = peer.NotExecBlockIndex
-	for i := 0; i < length; i++ {
-		peer.blocks[startIndex+length].UpdateState()
-	}
-	peer.mu.Unlock()
-}
+//func (peer *Peer) updateBlockState(length int) {
+//	peer.mu.Lock()
+//	var startIndex = peer.NotExecBlockIndex
+//	for i := 0; i < length; i++ {
+//		peer.blocks[startIndex+length].UpdateState()
+//	}
+//	peer.mu.Unlock()
+//}
 
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
@@ -195,11 +193,11 @@ func (peer *Peer) BlockOut() {
 	//var tx = make([]*Tx, 0)
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
-	peer.blocks = append(peer.blocks, *newBlock)
+	//peer.blocks = append(peer.blocks, *newBlock)
 	for _, eachPeer := range peerMap {
-		if eachPeer.id == peer.id {
-			continue
-		}
+		//if eachPeer.id == peer.id {
+		//	continue
+		//}
 		eachPeer.AppendBlockToRecord(peer.id, *newBlock)
 	}
 	//for _, id := range peer.peersIds {
