@@ -98,7 +98,6 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 			}
 		}
 	}
-	fmt.Println(getOpsNumber(hashtable))
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
@@ -109,6 +108,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	}
 	solution := newSolution(hashTables)
 	result := solution.getResult(IndexChoose)
+	fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
