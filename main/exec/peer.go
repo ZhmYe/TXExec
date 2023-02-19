@@ -153,6 +153,7 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 	peer.mu.Lock()
+	fmt.Println(strconv.Itoa(peer.id) + "update" + " " + strconv.Itoa(id))
 	record4id := peer.record[id]
 	record4id.index += bias
 	peer.record[id] = record4id
