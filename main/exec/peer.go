@@ -11,6 +11,7 @@ import (
 
 // PeerMap 所有节点
 var peerMap = make(map[int]Peer)
+var execLock = make([]bool, 0)
 
 type State int
 
@@ -49,12 +50,14 @@ type Peer struct {
 	record         map[int]Record // 各个节点的出块记录, key为节点id
 	blockTimeout   time.Duration  // 出块时间
 	blockTimeStamp time.Time      // 最后一次出块的时间
+	execLock       bool           // 是否正在执行交易
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
+	peer.execLock = false
 	peer.epochTimeout = time.Duration(400) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
@@ -102,6 +105,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
+	peer.execLock = true
 	hashTables := make([]map[string][]Op, 0)
 	for id, bias := range epoch {
 		hashTables = append(hashTables, peer.getHashTable(id, bias))
@@ -113,6 +117,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
 	}
+	peer.execLock = false
 	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
 
@@ -230,7 +235,7 @@ func (peer *Peer) start() {
 			peer.getNewBlockTimeout()
 		}
 		if peer.state == Monitor {
-			if peer.checkEpochTimeout() {
+			if peer.checkEpochTimeout() && !checkExecLock() {
 				peer.log(peer.RecordLog())
 				fmt.Println(peer.RecordLog())
 				var heightMap map[int]int
@@ -244,15 +249,23 @@ func (peer *Peer) start() {
 				}
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				for _, eachPeer := range peerMap {
-					//tmp := eachPeer
-					//go tmp.exec(heightMap)
-					eachPeer.exec(heightMap)
+					tmp := eachPeer
+					go tmp.exec(heightMap)
+					//eachPeer.exec(heightMap)
 				}
 
 			}
 		}
 		time.Sleep(time.Duration(50) * time.Millisecond)
 	}
+}
+func checkExecLock() bool {
+	for _, peer := range peerMap {
+		if peer.execLock {
+			return true
+		}
+	}
+	return false
 }
 
 // 停止节点
@@ -280,6 +293,7 @@ func generateRecordMap(ids []int) map[int]Record {
 func PeerInit() {
 	//peerList.config = config
 	peerId := generateIds(config.PeerNumber)
+	execLock = append(execLock, true, true, true, true)
 	var timestamp = time.Now()
 	var flag = false
 	for i, id := range peerId {
