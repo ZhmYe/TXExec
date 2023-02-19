@@ -51,7 +51,7 @@ type Peer struct {
 	blockTimeStamp time.Time      // 最后一次出块的时间
 }
 
-func newPeer(id int, state State, timestamp time.Time, peerId []int, record map[int]Record) *Peer {
+func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
@@ -61,10 +61,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, record map[
 	peer.blockTimeStamp = timestamp
 	peer.epochTimeStamp = timestamp
 	peer.peersIds = peerId
-	peer.record = make(map[int]Record)
-	for k, v := range record {
-		peer.record[k] = v
-	}
+	peer.record = generateRecordMap(peerId)
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
@@ -287,7 +284,6 @@ func generateRecordMap(ids []int) map[int]Record {
 func PeerInit() {
 	//peerList.config = config
 	peerId := generateIds(config.PeerNumber)
-	record := generateRecordMap(peerId)
 	var timestamp = time.Now()
 	var flag = false
 	for i, id := range peerId {
@@ -300,7 +296,7 @@ func PeerInit() {
 			state = Monitor
 			flag = true
 		}
-		var peer = newPeer(id, state, timestamp, peerId, record)
+		var peer = newPeer(id, state, timestamp, peerId)
 		//peerList.peers = append(peerList.peers, *peer)
 		peerMap[id] = *peer
 	}
