@@ -119,6 +119,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 			}
 		}
 	}
+	fmt.Println(getOpsNumber(hashtable))
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
@@ -132,7 +133,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	fmt.Println("Peer" + strconv.Itoa(peer.id) + "Tx execution by result..")
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
-		peerList.peers[id].UpdateIndexToRecord(id, epoch[id])
+		peer.UpdateIndexToRecord(id, epoch[id])
 	}
 	peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
