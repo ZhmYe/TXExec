@@ -256,11 +256,11 @@ func (peer *Peer) start() {
 					var height = peer.sendCheckBlockHeight(id)
 					heightMap[id] = height
 				}
+				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				for _, id := range peerList.getPeerId() {
 					peerList.peers[id].exec(heightMap)
 				}
 
-				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 			}
 		}
 		time.Sleep(time.Duration(50) * time.Millisecond)
