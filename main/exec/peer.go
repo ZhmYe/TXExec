@@ -85,14 +85,8 @@ func (peer *Peer) string() string {
 
 // 获取当前epoch中的{state: op->op}
 func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
-	fmt.Println(peer.id)
-	fmt.Println(bias)
-	fmt.Println(id)
 	hashtable := make(map[string][]Op)
 	record := peer.record[id]
-	fmt.Println(len(record.blocks))
-	fmt.Println(record.index)
-	fmt.Println()
 	for i := 0; i < bias; i++ {
 		tmpTx := record.blocks[i+record.index].txs
 		for _, tx := range tmpTx {
@@ -114,7 +108,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	}
 	solution := newSolution(hashTables)
 	result := solution.getResult(IndexChoose)
-	fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
+	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
@@ -159,7 +153,7 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 	//peer.mu.Lock()
-	fmt.Println(strconv.Itoa(peer.id) + "update" + " " + strconv.Itoa(id))
+	//fmt.Println(strconv.Itoa(peer.id) + "update" + " " + strconv.Itoa(id))
 	record4id := peer.record[id]
 	record4id.index += bias
 	peer.record[id] = record4id
@@ -245,7 +239,7 @@ func (peer *Peer) start() {
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
-					fmt.Println("height:" + strconv.Itoa(height))
+					//fmt.Println("height:" + strconv.Itoa(height))
 					heightMap[id] = height
 				}
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
