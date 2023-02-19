@@ -219,12 +219,18 @@ func (peer *Peer) BlockOut() {
 	newBlock := NewBlock(tx)
 	peer.mu.Lock()
 	peer.blocks = append(peer.blocks, *newBlock)
-	for _, id := range peer.peersIds {
-		if id == peer.id {
+	for _, eachPeer := range peerList.peers {
+		if eachPeer.id == peer.id {
 			continue
 		}
-		peerList.peers[id].AppendBlockToRecord(id, *newBlock)
+		eachPeer.AppendBlockToRecord(peer.id, *newBlock)
 	}
+	//for _, id := range peer.peersIds {
+	//	if id == peer.id {
+	//		continue
+	//	}
+	//	peerList.peers[id].AppendBlockToRecord(peer.id, *newBlock)
+	//}
 	peer.mu.Unlock()
 	//fmt.Println(peer.string())
 	peer.log(peer.string())
