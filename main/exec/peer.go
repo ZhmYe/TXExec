@@ -253,24 +253,18 @@ func (peer *Peer) start() {
 					//fmt.Println("height:" + strconv.Itoa(height))
 					heightMap[id] = height
 				}
+				var wg sync.WaitGroup
+				wg.Add(len(peer.peersIds))
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
-				ch := make(chan int)
 				for _, eachPeer := range peerMap {
 					tmp := eachPeer
-					go func(tmp Peer) {
+					go func(tmp Peer, wg *sync.WaitGroup) {
+						defer wg.Done()
 						tmp.exec(heightMap)
-						ch <- 1
-					}(tmp)
+					}(tmp, &wg)
 					//eachPeer.exec(heightMap)
 				}
-				finishCount := 0
-				for {
-					if finishCount == len(peer.peersIds) {
-						break
-					}
-					c := <-ch
-					finishCount += c
-				}
+				wg.Wait()
 
 			}
 		}
