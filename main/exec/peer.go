@@ -61,7 +61,10 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, record map[
 	peer.blockTimeStamp = timestamp
 	peer.epochTimeStamp = timestamp
 	peer.peersIds = peerId
-	peer.record = record
+	peer.record = make(map[int]Record)
+	for k, v := range record {
+		peer.record[k] = v
+	}
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
