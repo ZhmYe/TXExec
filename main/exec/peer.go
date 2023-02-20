@@ -159,6 +159,7 @@ func (peer *Peer) addExecNumber(extra int) {
 	tmp := peer.execNumber
 	tmp.number += extra
 	peer.execNumber = tmp
+	fmt.Println(extra)
 	fmt.Println(peer.execNumber)
 }
 func (peer *Peer) exec(epoch map[int]int) {
