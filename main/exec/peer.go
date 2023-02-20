@@ -159,6 +159,7 @@ func (peer *Peer) addExecNumber(extra int) {
 	tmp := peer.execNumber
 	tmp.number += extra
 	peer.execNumber = tmp
+	fmt.Println(peer.execNumber)
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
@@ -339,7 +340,7 @@ func (peer *Peer) start() {
 func (peer *Peer) stop() {
 	peer.mu.Lock()
 	peer.state = Dead
-	fmt.Println(len(peer.record[peer.id].blocks))
+	//fmt.Println(peer.execNumber)
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
