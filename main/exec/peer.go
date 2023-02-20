@@ -11,7 +11,7 @@ import (
 )
 
 // PeerMap 所有节点
-var peerMap = make(map[int]Peer)
+var peerMap = make(map[int]*Peer)
 
 type State int
 
@@ -322,7 +322,7 @@ func (peer *Peer) start() {
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				for _, eachPeer := range peerMap {
 					tmp := eachPeer
-					go func(tmp Peer, wg *sync.WaitGroup) {
+					go func(tmp *Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
 						fmt.Println(tmp.execNumber.number)
 						tmp.exec(heightMap)
@@ -399,7 +399,7 @@ func PeerInit() {
 		}
 		var peer = newPeer(id, state, timestamp, peerId)
 		//peerList.peers = append(peerList.peers, *peer)
-		peerMap[id] = *peer
+		peerMap[id] = peer
 	}
 	for _, peer := range peerMap {
 		var tmp = peer
