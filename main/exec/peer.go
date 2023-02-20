@@ -159,8 +159,6 @@ func (peer *Peer) addExecNumber(extra int) {
 	tmp := peer.execNumber
 	tmp.number += extra
 	peer.execNumber = tmp
-	fmt.Println(extra)
-	fmt.Println(peer.execNumber)
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
@@ -326,6 +324,7 @@ func (peer *Peer) start() {
 					tmp := eachPeer
 					go func(tmp Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
+						fmt.Println(tmp.execNumber.number)
 						tmp.exec(heightMap)
 					}(tmp, &wg)
 					//eachPeer.exec(heightMap)
