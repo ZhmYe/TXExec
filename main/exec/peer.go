@@ -251,7 +251,7 @@ func (peer *Peer) BlockOut() {
 	var tx = GenTxSet()
 	//var tx = make([]*Tx, 0)
 	newBlock := NewBlock(tx)
-	peer.mu.Lock()
+	//peer.mu.Lock()
 	//peer.blocks = append(peer.blocks, *newBlock)
 	for _, eachPeer := range peerMap {
 		//if eachPeer.id == peer.id {
@@ -265,7 +265,7 @@ func (peer *Peer) BlockOut() {
 	//	}
 	//	peerList.peers[id].AppendBlockToRecord(peer.id, *newBlock)
 	//}
-	peer.mu.Unlock()
+	//peer.mu.Unlock()
 	peer.log(peer.string())
 
 }
