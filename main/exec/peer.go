@@ -334,6 +334,7 @@ func (peer *Peer) start() {
 func (peer *Peer) stop() {
 	peer.mu.Lock()
 	peer.state = Dead
+	fmt.Println(peer.execNumber)
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
@@ -370,7 +371,6 @@ func PeerStop() StatisticalResults {
 	for _, peer := range peerMap {
 		peer.stop()
 		result = append(result, peer.record)
-		fmt.Println(peer.execNumber)
 		execNumber = append(execNumber, peer.execNumber)
 	}
 
