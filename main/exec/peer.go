@@ -268,6 +268,9 @@ func (peer *Peer) start() {
 	peer.log(peer.string())
 	go func(peer *Peer) {
 		for {
+			if peer.state == Dead {
+				break
+			}
 			if peer.checkBlockTimeout() {
 				peer.BlockOut()
 				peer.getNewBlockTimeout()
@@ -275,6 +278,9 @@ func (peer *Peer) start() {
 		}
 	}(peer)
 	for {
+		if peer.state == Dead {
+			break
+		}
 		//fmt.Println(peer.id)
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
@@ -338,6 +344,14 @@ func generateRecordMap(ids []int) map[int]Record {
 	}
 	return record
 }
+func PeerStop() map[int]Record {
+	result := make([]map[int]Record, 0)
+	for _, peer := range peerMap {
+		peer.stop()
+		result = append(result, peer.record)
+	}
+	return result[0]
+}
 func PeerInit() {
 	//peerList.config = config
 	peerId := generateIds(config.PeerNumber)
@@ -360,5 +374,17 @@ func PeerInit() {
 	for _, peer := range peerMap {
 		var tmp = peer
 		go tmp.start()
+	}
+	timeStart := time.Now()
+	for {
+		totalExecBlockNumber := 0
+		if time.Since(timeStart) >= config.execTimeout {
+			records := PeerStop()
+			for _, record := range records {
+				totalExecBlockNumber += record.index - 1
+			}
+			fmt.Print("tps: ")
+			fmt.Print(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
+		}
 	}
 }
