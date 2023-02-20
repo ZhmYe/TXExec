@@ -176,7 +176,9 @@ func (peer *Peer) exec(epoch map[int]int) {
 	fmt.Println("111 " + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
-		peer.UpdateIndexToRecord(id, epoch[id])
+		record4id := peer.record[id]
+		record4id.index += epoch[id]
+		peer.record[id] = record4id
 	}
 	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
