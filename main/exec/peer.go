@@ -116,9 +116,9 @@ func (peer *Peer) execImpl(hashtable map[string][]Op) {
 	}
 	var index = 0
 	var jump = 4
-	var wg sync.WaitGroup
-	wg.Add(jump)
 	for {
+		var wg sync.WaitGroup
+		wg.Add(jump)
 		for i := 0; i < jump; i++ {
 			tmp := i
 			go func(i int, wg *sync.WaitGroup) {
