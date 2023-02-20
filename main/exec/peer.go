@@ -370,6 +370,7 @@ func PeerStop() StatisticalResults {
 	for _, peer := range peerMap {
 		peer.stop()
 		result = append(result, peer.record)
+		fmt.Println(peer.execNumber)
 		execNumber = append(execNumber, peer.execNumber)
 	}
 
