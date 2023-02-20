@@ -400,7 +400,7 @@ func PeerInit() {
 		if time.Since(timeStart) >= config.execTimeout {
 			statisticalResults := PeerStop()
 			for _, record := range statisticalResults.records {
-				totalExecBlockNumber += record.index - 1
+				totalExecBlockNumber += record.index
 			}
 			fmt.Println(totalExecBlockNumber)
 			fmt.Println(statisticalResults.execNumber)
