@@ -170,7 +170,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	result := solution.getResult(IndexChoose)
 	// 执行交易
 	peer.execImpl(result)
-	//fmt.Println(getOpsNumber(result))
+	fmt.Println(getOpsNumber(result))
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.addExecNumber(getOpsNumber(result))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
