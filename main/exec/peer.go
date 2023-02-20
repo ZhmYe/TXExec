@@ -157,7 +157,6 @@ func (peer *Peer) exec(epoch map[int]int) {
 	// 执行交易
 	peer.execImpl(result)
 	peer.addExecNumber(getOpsNumber(result))
-	fmt.Println(peer.execNumber)
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
@@ -353,13 +352,28 @@ func generateRecordMap(ids []int) map[int]Record {
 	}
 	return record
 }
-func PeerStop() map[int]Record {
+
+type StatisticalResults struct {
+	records    map[int]Record
+	execNumber int
+}
+
+func newStatisticalResults(result map[int]Record, execNumber int) *StatisticalResults {
+	newResult := new(StatisticalResults)
+	newResult.records = result
+	newResult.execNumber = execNumber
+	return newResult
+}
+func PeerStop() StatisticalResults {
 	result := make([]map[int]Record, 0)
+	execNumber := make([]int, 0)
 	for _, peer := range peerMap {
 		peer.stop()
 		result = append(result, peer.record)
+		execNumber = append(execNumber, peer.execNumber)
 	}
-	return result[0]
+
+	return *newStatisticalResults(result[0], execNumber[0])
 }
 func PeerInit() {
 	//peerList.config = config
@@ -387,20 +401,15 @@ func PeerInit() {
 	timeStart := time.Now()
 	for {
 		totalExecBlockNumber := 0
-		totalExecOpsNumber := 0
 		if time.Since(timeStart) >= config.execTimeout {
-			records := PeerStop()
-			for _, record := range records {
+			statisticalResults := PeerStop()
+			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index - 1
-			}
-			for _, peer := range peerMap {
-				totalExecOpsNumber += peer.execNumber
 			}
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
-			fmt.Println(totalExecOpsNumber)
-			fmt.Println(1 - float64(totalExecOpsNumber)/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)*float64(config.OpsPerTx)))
+			fmt.Println(1 - float64(statisticalResults.execNumber)/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)*float64(config.OpsPerTx)))
 			break
 		}
 	}
