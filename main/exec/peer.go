@@ -2,6 +2,7 @@ package exec
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -243,7 +244,7 @@ func (peer *Peer) updateEpochTimeStamp() {
 	peer.epochTimeStamp = time.Now()
 }
 
-// 是否需要出块
+// 执行epoch
 func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
@@ -298,10 +299,18 @@ func (peer *Peer) start() {
 				heightMap = make(map[int]int)
 				//fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
+				total := 0
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
 					//fmt.Println("height:" + strconv.Itoa(height))
 					heightMap[id] = height
+					total += height
+				}
+				if total > 10 {
+					for id, height := range heightMap {
+						tmp := int(math.Floor(float64(10) * float64(height) / float64(total)))
+						heightMap[id] = tmp
+					}
 				}
 				var wg sync.WaitGroup
 				wg.Add(len(peer.peersIds))
