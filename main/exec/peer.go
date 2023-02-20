@@ -157,6 +157,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	// 执行交易
 	peer.execImpl(result)
 	peer.addExecNumber(getOpsNumber(result))
+	fmt.Println(peer.execNumber)
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
@@ -398,6 +399,7 @@ func PeerInit() {
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
+			fmt.Println(totalExecOpsNumber)
 			fmt.Println(1 - float64(totalExecOpsNumber)/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)*float64(config.OpsPerTx)))
 			break
 		}
