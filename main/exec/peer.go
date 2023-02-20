@@ -285,7 +285,7 @@ func (peer *Peer) start() {
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
 				peer.log(peer.RecordLog())
-				fmt.Println(peer.RecordLog())
+				//fmt.Println(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
 				//fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
@@ -385,6 +385,7 @@ func PeerInit() {
 			}
 			fmt.Print("tps: ")
 			fmt.Print(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
+			break
 		}
 	}
 }
