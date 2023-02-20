@@ -156,7 +156,9 @@ func (peer *Peer) execImpl(hashtable map[string][]Op) {
 	}
 }
 func (peer *Peer) addExecNumber(extra int) {
-	peer.execNumber.number += extra
+	tmp := peer.execNumber.number
+	tmp += extra
+	peer.execNumber.number = tmp
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
@@ -222,16 +224,6 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 	peer.record[id] = record4id
 	//peer.mu.Unlock()
 }
-
-// 更新区块状态
-//func (peer *Peer) updateBlockState(length int) {
-//	peer.mu.Lock()
-//	var startIndex = peer.NotExecBlockIndex
-//	for i := 0; i < length; i++ {
-//		peer.blocks[startIndex+length].UpdateState()
-//	}
-//	peer.mu.Unlock()
-//}
 
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
