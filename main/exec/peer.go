@@ -107,6 +107,23 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	}
 	return hashtable
 }
+
+// 根据散列表执行其中的交易
+// 1、不同key串行
+// 2、不同key并行： key太多，可能需要设置上限
+func (peer *Peer) execImpl(hashtable map[string][]Op) {
+	// 暂时先写不同key串行
+	for _, ops := range hashtable {
+		for _, op := range ops {
+			if op.Type == OpRead {
+				Read(op.Key)
+			}
+			if op.Type == OpWrite {
+				Write(op.Key, op.Val)
+			}
+		}
+	}
+}
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
 	peer.execLock = true
@@ -116,6 +133,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 	}
 	solution := newSolution(hashTables)
 	result := solution.getResult(IndexChoose)
+	// 执行交易
+	peer.execImpl(result)
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
