@@ -173,8 +173,6 @@ func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println(getOpsNumber(result))
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.addExecNumber(getOpsNumber(result))
-	p := peerMap[peer.id]
-	p.addExecNumber(getOpsNumber(result))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
@@ -323,6 +321,7 @@ func (peer *Peer) start() {
 				wg.Add(len(peer.peersIds))
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				for _, eachPeer := range peerMap {
+					fmt.Println(eachPeer.execNumber.number)
 					tmp := eachPeer
 					go func(tmp Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
