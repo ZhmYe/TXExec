@@ -6,7 +6,4 @@ func main() {
 	exec.Init()
 	exec.PeerInit()
 	//exec.Test()
-	for {
-		continue
-	}
 }

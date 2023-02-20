@@ -262,7 +262,7 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 
 // 启动节点
 func (peer *Peer) start() {
-	//fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	//fmt.Println(peer.string())
 	peer.log(peer.string())
