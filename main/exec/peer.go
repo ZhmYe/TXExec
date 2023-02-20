@@ -339,7 +339,7 @@ func (peer *Peer) start() {
 func (peer *Peer) stop() {
 	peer.mu.Lock()
 	peer.state = Dead
-	fmt.Println(peer.execNumber)
+	fmt.Println(len(peer.record[peer.id].blocks))
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
