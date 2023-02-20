@@ -110,17 +110,48 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 
 func (peer *Peer) execImpl(hashtable map[string][]Op) {
 	// 暂时先写不同key串行
-	fmt.Println(len(hashtable))
-	for _, ops := range hashtable {
-		for _, op := range ops {
-			if op.Type == OpRead {
-				Read(op.Key)
-			}
-			if op.Type == OpWrite {
-				Write(op.Key, op.Val)
-			}
+	keyTable := make([]string, 0)
+	for key, _ := range hashtable {
+		keyTable = append(keyTable, key)
+	}
+	var index = 0
+	var jump = 4
+	var wg sync.WaitGroup
+	wg.Add(jump)
+	for {
+		for i := 0; i < jump; i++ {
+			tmp := i
+			go func(i int, wg *sync.WaitGroup) {
+				defer wg.Done()
+				if index+i >= len(keyTable) {
+					return
+				}
+				for _, op := range hashtable[keyTable[index+i]] {
+					if op.Type == OpRead {
+						Read(op.Key)
+					}
+					if op.Type == OpWrite {
+						Write(op.Key, op.Val)
+					}
+				}
+			}(tmp, &wg)
+		}
+		wg.Wait()
+		index += jump
+		if index >= len(keyTable) {
+			break
 		}
 	}
+	//for _, ops := range hashtable {
+	//	for _, op := range ops {
+	//		if op.Type == OpRead {
+	//			Read(op.Key)
+	//		}
+	//		if op.Type == OpWrite {
+	//			Write(op.Key, op.Val)
+	//		}
+	//	}
+	//}
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
