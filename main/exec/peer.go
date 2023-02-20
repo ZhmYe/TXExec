@@ -100,10 +100,6 @@ func (peer *Peer) string() string {
 
 // 获取当前epoch中的{state: op->op}
 func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
-	//fmt.Println(peer.id)
-	//fmt.Println(id)
-	//fmt.Println(bias)
-	//fmt.Println()
 	hashtable := make(map[string][]Op)
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
@@ -170,10 +166,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 	result := solution.getResult(IndexChoose)
 	// 执行交易
 	peer.execImpl(result)
-	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	//peer.addExecNumber(getOpsNumber(result))
 	peer.execNumber.number += getOpsNumber(result)
-	fmt.Println("111 " + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
@@ -220,7 +214,6 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 	//peer.mu.Lock()
-	//fmt.Println(strconv.Itoa(peer.id) + "update" + " " + strconv.Itoa(id))
 	record4id := peer.record[id]
 	record4id.index += bias
 	peer.record[id] = record4id
@@ -278,7 +271,6 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	//fmt.Println(peer.string())
 	peer.log(peer.string())
 	go func(peer *Peer) {
 		for {
@@ -296,20 +288,16 @@ func (peer *Peer) start() {
 		if peer.state == Dead {
 			break
 		}
-		//fmt.Println(peer.id)
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
 				peer.log(peer.RecordLog())
-				//fmt.Println(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
-				//fmt.Println("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				total := 0
 				time.Sleep(time.Duration(100) * time.Millisecond) // 得到实时树高耗时
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
-					//fmt.Println("height:" + strconv.Itoa(height))
 					heightMap[id] = height
 					total += height
 				}
@@ -327,7 +315,6 @@ func (peer *Peer) start() {
 					tmp := eachPeer
 					go func(tmp *Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
-						fmt.Println(tmp.execNumber.number)
 						tmp.exec(heightMap)
 					}(tmp, &wg)
 					//eachPeer.exec(heightMap)
@@ -343,7 +330,6 @@ func (peer *Peer) start() {
 func (peer *Peer) stop() {
 	peer.mu.Lock()
 	peer.state = Dead
-	//fmt.Println(peer.execNumber)
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
@@ -416,6 +402,7 @@ func PeerInit() {
 			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index - 1
 			}
+			fmt.Println(statisticalResults.execNumber)
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
