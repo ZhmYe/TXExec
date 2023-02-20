@@ -173,6 +173,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println(getOpsNumber(result))
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.addExecNumber(getOpsNumber(result))
+	fmt.Println(peer.execNumber.number)
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		peer.UpdateIndexToRecord(id, epoch[id])
