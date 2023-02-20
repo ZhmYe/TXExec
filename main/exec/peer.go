@@ -171,7 +171,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 	// 执行交易
 	peer.execImpl(result)
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
-	peer.addExecNumber(getOpsNumber(result))
+	//peer.addExecNumber(getOpsNumber(result))
+	peer.execNumber.number += getOpsNumber(result)
 	fmt.Println(111)
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
