@@ -322,7 +322,7 @@ func (peer *Peer) start() {
 				wg.Add(len(peer.peersIds))
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				for _, eachPeer := range peerMap {
-					fmt.Println(eachPeer.execNumber.number)
+					fmt.Println(len(eachPeer.record[peer.id].blocks))
 					tmp := eachPeer
 					go func(tmp Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
