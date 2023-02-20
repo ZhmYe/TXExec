@@ -17,7 +17,7 @@ type Config struct {
 }
 
 var config = Config{
-	BatchTxNum:     2500,
+	BatchTxNum:     2000,
 	ValueSize:      64,
 	OpsPerTx:       3,
 	OriginKeys:     100000,
@@ -27,5 +27,5 @@ var config = Config{
 	StdDiff:        10000.0,
 	PeerNumber:     4,
 	execTimeout:    time.Duration(1) * time.Minute,
-	execTimeNumber: 1,
+	execTimeNumber: 60,
 }
