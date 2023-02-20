@@ -50,6 +50,7 @@ type Peer struct {
 	record         map[int]Record // 各个节点的出块记录, key为节点id
 	blockTimeout   time.Duration  // 出块时间
 	blockTimeStamp time.Time      // 最后一次出块的时间
+	execNumber     int            //执行的ops数量
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
@@ -63,6 +64,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.epochTimeStamp = timestamp
 	peer.peersIds = peerId
 	peer.record = generateRecordMap(peerId)
+	peer.execNumber = 0
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
@@ -141,6 +143,9 @@ func (peer *Peer) execImpl(hashtable map[string][]Op) {
 		}
 	}
 }
+func (peer *Peer) addExecNumber(extra int) {
+	peer.execNumber += extra
+}
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
 	hashTables := make([]map[string][]Op, 0)
@@ -151,6 +156,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	result := solution.getResult(IndexChoose)
 	// 执行交易
 	peer.execImpl(result)
+	peer.addExecNumber(getOpsNumber(result))
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
@@ -380,13 +386,19 @@ func PeerInit() {
 	timeStart := time.Now()
 	for {
 		totalExecBlockNumber := 0
+		totalExecOpsNumber := 0
 		if time.Since(timeStart) >= config.execTimeout {
 			records := PeerStop()
 			for _, record := range records {
 				totalExecBlockNumber += record.index - 1
 			}
+			for _, peer := range peerMap {
+				totalExecOpsNumber += peer.execNumber
+			}
 			fmt.Print("tps: ")
-			fmt.Print(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
+			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
+			fmt.Print("abort rate:")
+			fmt.Println(1 - float64(totalExecOpsNumber)/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)*float64(config.OpsPerTx)))
 			break
 		}
 	}
