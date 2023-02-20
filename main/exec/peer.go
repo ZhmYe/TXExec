@@ -406,6 +406,7 @@ func PeerInit() {
 			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index - 1
 			}
+			fmt.Println(statisticalResults.execNumber)
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
