@@ -167,13 +167,13 @@ func (peer *Peer) exec(epoch map[int]int) {
 	// 执行交易
 	peer.execImpl(result)
 	//peer.addExecNumber(getOpsNumber(result))
-	peer.execNumber.number += getOpsNumber(result)
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
 		record4id.index += epoch[id]
 		peer.record[id] = record4id
 	}
+	peer.execNumber.number += getOpsNumber(result)
 	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
 
@@ -402,6 +402,7 @@ func PeerInit() {
 			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index - 1
 			}
+			fmt.Println(totalExecBlockNumber)
 			fmt.Println(statisticalResults.execNumber)
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
