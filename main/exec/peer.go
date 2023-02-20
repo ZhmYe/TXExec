@@ -62,7 +62,7 @@ type Peer struct {
 	record         map[int]Record // 各个节点的出块记录, key为节点id
 	blockTimeout   time.Duration  // 出块时间
 	blockTimeStamp time.Time      // 最后一次出块的时间
-	execNumber     OpsNumber      //执行的ops数量
+	execNumber     *OpsNumber     //执行的ops数量
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
@@ -76,7 +76,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.epochTimeStamp = timestamp
 	peer.peersIds = peerId
 	peer.record = generateRecordMap(peerId)
-	peer.execNumber = *newOpsNumber(0, peer.id)
+	peer.execNumber = newOpsNumber(0, peer.id)
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
@@ -171,8 +171,6 @@ func (peer *Peer) exec(epoch map[int]int) {
 	// 执行交易
 	peer.execImpl(result)
 	//fmt.Println(getOpsNumber(result))
-	peer.addExecNumber(getOpsNumber(result))
-	fmt.Println("ops number:" + strconv.Itoa(peer.execNumber.number))
 	//fmt.Println("Peer" + strconv.Itoa(peer.id) + " exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
@@ -413,7 +411,6 @@ func PeerInit() {
 			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index - 1
 			}
-			fmt.Println(statisticalResults.execNumber)
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
