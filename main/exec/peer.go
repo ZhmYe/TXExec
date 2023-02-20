@@ -280,12 +280,16 @@ func (peer *Peer) start() {
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	//fmt.Println(peer.string())
 	peer.log(peer.string())
+	go func(peer *Peer) {
+		for {
+			if peer.checkBlockTimeout() {
+				peer.BlockOut()
+				peer.getNewBlockTimeout()
+			}
+		}
+	}(peer)
 	for {
 		//fmt.Println(peer.id)
-		if peer.checkBlockTimeout() {
-			peer.BlockOut()
-			peer.getNewBlockTimeout()
-		}
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
 				peer.log(peer.RecordLog())
