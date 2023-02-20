@@ -58,7 +58,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.id = id
 	peer.state = state
 	peer.execLock = false
-	peer.epochTimeout = time.Duration(400) * time.Millisecond
+	peer.epochTimeout = time.Duration(500) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
 	peer.blockTimeStamp = timestamp
@@ -230,7 +230,7 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
 	peer.mu.Lock()
-	peer.blockTimeout = time.Duration(100+rand.Intn(300)) * time.Millisecond
+	peer.blockTimeout = time.Duration(1000+rand.Intn(3000)) * time.Millisecond
 	peer.blockTimeStamp = time.Now()
 	peer.mu.Unlock()
 }
