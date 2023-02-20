@@ -108,11 +108,9 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	return hashtable
 }
 
-// 根据散列表执行其中的交易
-// 1、不同key串行
-// 2、不同key并行： key太多，可能需要设置上限
 func (peer *Peer) execImpl(hashtable map[string][]Op) {
 	// 暂时先写不同key串行
+	fmt.Println(len(hashtable))
 	for _, ops := range hashtable {
 		for _, op := range ops {
 			if op.Type == OpRead {
