@@ -38,6 +38,18 @@ func (record *Record) appendBlock(block Block) {
 	record.blocks = append(record.blocks, block)
 }
 
+type OpsNumber struct {
+	number int
+	id     int
+}
+
+func newOpsNumber(number int, id int) *OpsNumber {
+	opsNumber := new(OpsNumber)
+	opsNumber.number = number
+	opsNumber.id = id
+	return opsNumber
+}
+
 type Peer struct {
 	mu             sync.Mutex    // 并发
 	id             int           // 节点id
@@ -50,7 +62,7 @@ type Peer struct {
 	record         map[int]Record // 各个节点的出块记录, key为节点id
 	blockTimeout   time.Duration  // 出块时间
 	blockTimeStamp time.Time      // 最后一次出块的时间
-	execNumber     int            //执行的ops数量
+	execNumber     OpsNumber      //执行的ops数量
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
@@ -64,7 +76,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.epochTimeStamp = timestamp
 	peer.peersIds = peerId
 	peer.record = generateRecordMap(peerId)
-	peer.execNumber = 0
+	peer.execNumber = *newOpsNumber(0, peer.id)
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
@@ -144,7 +156,7 @@ func (peer *Peer) execImpl(hashtable map[string][]Op) {
 	}
 }
 func (peer *Peer) addExecNumber(extra int) {
-	peer.execNumber += extra
+	peer.execNumber.number += extra
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	peer.mu.Lock()
@@ -371,7 +383,7 @@ func PeerStop() StatisticalResults {
 	for _, peer := range peerMap {
 		peer.stop()
 		result = append(result, peer.record)
-		execNumber = append(execNumber, peer.execNumber)
+		execNumber = append(execNumber, peer.execNumber.number)
 	}
 
 	return *newStatisticalResults(result[0], execNumber[0])
