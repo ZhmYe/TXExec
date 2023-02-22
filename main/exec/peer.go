@@ -347,6 +347,7 @@ func (peer *Peer) execWaiting() {
 	peer.mu.Lock()
 	blocks := make([]Block, 0)
 	for _, record := range peer.record {
+		fmt.Println(record.index)
 		block := record.blocks[record.index]
 		blocks = append(blocks, block)
 	}
