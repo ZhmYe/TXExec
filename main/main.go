@@ -11,6 +11,6 @@ func testWaiting() {
 func main() {
 	exec.Init()
 	testParalleling()
-	testWaiting()
+	//testWaiting()
 	//exec.Test()
 }
