@@ -370,6 +370,7 @@ func (peer *Peer) runWaiting() {
 		}
 		if peer.checkComplete() {
 			peer.log(peer.RecordLog())
+			fmt.Println(peer.RecordLog())
 			var wg sync.WaitGroup
 			wg.Add(len(peer.peersIds))
 			// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
