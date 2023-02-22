@@ -267,23 +267,15 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 	return tmp.getBlockHeight()
 }
 
+type execType int
+
+const (
+	Waiting execType = iota
+	Paralleling
+)
+
 // 启动节点
-func (peer *Peer) start() {
-	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	peer.log(peer.string())
-	go func(peer *Peer) {
-		for {
-			if peer.state == Dead {
-				break
-			}
-			if peer.checkBlockTimeout() {
-				peer.BlockOut()
-				peer.getNewBlockTimeout()
-			}
-			time.Sleep(time.Duration(100) * time.Millisecond)
-		}
-	}(peer)
+func (peer *Peer) runParalleling() {
 	for {
 		if peer.state == Dead {
 			break
@@ -324,6 +316,36 @@ func (peer *Peer) start() {
 			}
 		}
 	}
+}
+func (peer *Peer) runWaiting() {
+	for {
+		if peer.state == Dead {
+			break
+		}
+	}
+}
+func (peer *Peer) start(params execType) {
+	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+	peer.log(peer.string())
+	go func(peer *Peer) {
+		for {
+			if peer.state == Dead {
+				break
+			}
+			if peer.checkBlockTimeout() {
+				peer.BlockOut()
+				peer.getNewBlockTimeout()
+			}
+			time.Sleep(time.Duration(100) * time.Millisecond)
+		}
+	}(peer)
+	if params == Paralleling {
+		peer.runParalleling()
+	} else if params == Waiting {
+		peer.runWaiting()
+	}
+
 }
 
 // 停止节点
