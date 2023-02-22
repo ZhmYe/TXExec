@@ -64,7 +64,7 @@ func PeerInit() {
 	}
 	for _, peer := range peerMap {
 		var tmp = peer
-		go tmp.start()
+		go tmp.start(Paralleling)
 	}
 	timeStart := time.Now()
 	for {
