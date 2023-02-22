@@ -223,7 +223,7 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
 	peer.mu.Lock()
-	peer.blockTimeout = time.Duration(1000+rand.Intn((peer.id+1)*1000)) * time.Millisecond
+	peer.blockTimeout = time.Duration(1000*(peer.id+1)+rand.Intn(1000)) * time.Millisecond
 	peer.blockTimeStamp = time.Now()
 	peer.mu.Unlock()
 }
