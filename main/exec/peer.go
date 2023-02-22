@@ -346,10 +346,8 @@ func (peer *Peer) execWaitingImpl(blocks []Block) {
 func (peer *Peer) execWaiting() {
 	peer.mu.Lock()
 	blocks := make([]Block, 0)
-	for id, record := range peer.record {
-		fmt.Print(peer.id)
-		fmt.Print(id)
-		fmt.Println(record.index)
+	fmt.Println(len(peer.record))
+	for _, record := range peer.record {
 		block := record.blocks[record.index]
 		blocks = append(blocks, block)
 	}
