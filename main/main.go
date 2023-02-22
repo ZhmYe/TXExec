@@ -10,7 +10,7 @@ func testWaiting() {
 }
 func main() {
 	exec.Init()
-	testParalleling()
-	//testWaiting()
+	//testParalleling()
+	testWaiting()
 	//exec.Test()
 }
