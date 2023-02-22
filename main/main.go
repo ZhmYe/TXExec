@@ -4,6 +4,6 @@ import "TXExec/exec"
 
 func main() {
 	exec.Init()
-	exec.PeerInit()
+	exec.PeerInit(exec.Paralleling)
 	//exec.Test()
 }

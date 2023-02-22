@@ -116,7 +116,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
 	return hashtable
 }
 
-func (peer *Peer) execImpl(hashtable map[string][]Op) {
+func (peer *Peer) execParallelingImpl(hashtable map[string][]Op) {
 	// 暂时先写不同key串行
 	keyTable := make([]string, 0)
 	for key, _ := range hashtable {
@@ -156,7 +156,7 @@ func (peer *Peer) addExecNumber(extra int) {
 	tmp.number += extra
 	peer.execNumber = tmp
 }
-func (peer *Peer) exec(epoch map[int]int) {
+func (peer *Peer) execParalleling(epoch map[int]int) {
 	peer.mu.Lock()
 	hashTables := make([]map[string][]Op, 0)
 	for id, bias := range epoch {
@@ -165,7 +165,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 	solution := newSolution(hashTables)
 	result := solution.getResult(IndexChoose)
 	// 执行交易
-	peer.execImpl(result)
+	peer.execParallelingImpl(result)
 	//peer.addExecNumber(getOpsNumber(result))
 	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
 	for _, id := range peer.peersIds {
@@ -307,7 +307,7 @@ func (peer *Peer) runParalleling() {
 					tmp := eachPeer
 					go func(tmp *Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
-						tmp.exec(heightMap)
+						tmp.execParalleling(heightMap)
 					}(tmp, &wg)
 					//eachPeer.exec(heightMap)
 				}
@@ -317,10 +317,69 @@ func (peer *Peer) runParalleling() {
 		}
 	}
 }
+func (peer *Peer) checkComplete() bool {
+	flag := true
+	for _, id := range peer.peersIds {
+		height := peer.sendCheckBlockHeight(id)
+		if height == 0 {
+			flag = false
+		}
+	}
+	return flag
+}
+func (peer *Peer) execWaitingImpl(blocks []Block) {
+	for _, block := range blocks {
+		for _, tx := range block.txs {
+			for _, op := range tx.Ops {
+				if op.Type == OpRead {
+					Read(op.Key)
+				}
+				if op.Type == OpWrite {
+					Write(op.Key, op.Val)
+				}
+			}
+		}
+	}
+}
+func (peer *Peer) execWaiting() {
+	peer.mu.Lock()
+	blocks := make([]Block, 0)
+	for _, record := range peer.record {
+		block := record.blocks[record.index]
+		blocks = append(blocks, block)
+	}
+	// 执行交易
+	peer.execWaitingImpl(blocks)
+	//peer.addExecNumber(getOpsNumber(result))
+	peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
+	for _, id := range peer.peersIds {
+		record4id := peer.record[id]
+		record4id.index += 1
+		peer.record[id] = record4id
+	}
+	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum * config.OpsPerTx
+	//peer.NotExecBlockIndex += epoch[peer.id]
+	peer.mu.Unlock()
+}
 func (peer *Peer) runWaiting() {
 	for {
 		if peer.state == Dead {
 			break
+		}
+		if peer.checkComplete() {
+			peer.log(peer.RecordLog())
+			var wg sync.WaitGroup
+			wg.Add(len(peer.peersIds))
+			// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
+			for _, eachPeer := range peerMap {
+				tmp := eachPeer
+				go func(tmp *Peer, wg *sync.WaitGroup) {
+					defer wg.Done()
+					tmp.execWaiting()
+				}(tmp, &wg)
+				//eachPeer.exec(heightMap)
+			}
+			wg.Wait()
 		}
 	}
 }
