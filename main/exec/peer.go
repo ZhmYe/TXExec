@@ -320,7 +320,7 @@ func (peer *Peer) runParalleling() {
 func (peer *Peer) checkComplete() bool {
 	flag := true
 	for _, id := range peer.peersIds {
-		height := peer.sendCheckBlockHeight(id)
+		height := len(peer.record[id].blocks) - peer.record[id].index
 		if height == 0 {
 			flag = false
 		}
