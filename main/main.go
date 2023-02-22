@@ -11,7 +11,7 @@ func testWaiting() {
 	exec.PeerInit(exec.Waiting)
 }
 func main() {
-	testParalleling()
+	//testParalleling()
 	testWaiting()
 	//exec.Test()
 }
