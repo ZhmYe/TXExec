@@ -192,7 +192,6 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 		record4id.index += epoch[id]
 		peer.record[id] = record4id
 	}
-	fmt.Println(getTxNumber(result))
 	peer.execNumber.number += getTxNumber(result)
 	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()

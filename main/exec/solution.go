@@ -1,5 +1,7 @@
 package exec
 
+import "fmt"
+
 type StateSet struct {
 	ReadSet  []Unit // 读集
 	WriteSet []Unit // 写集
@@ -66,6 +68,7 @@ func getTxNumber(a map[string]StateSet) int {
 		length += len(stateSet.ReadSet)
 		length += len(stateSet.WriteSet)
 	}
+	fmt.Println(length)
 	return length / config.OpsPerTx
 }
 func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) map[string]StateSet {
