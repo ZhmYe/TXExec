@@ -181,22 +181,27 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 	peer.mu.Lock()
 	hashTables := make([]map[string]StateSet, 0)
 	for id, bias := range epoch {
+		if bias == 0 {
+			continue
+		}
 		hashTables = append(hashTables, peer.getHashTable(id, bias))
 	}
-	solution := newSolution(hashTables)
-	result := solution.getResult()
-	// 执行交易
-	peer.execParallelingImpl(result)
-	//peer.addExecNumber(getOpsNumber(result))
-	peer.log("exec ops:" + strconv.Itoa(getTxNumber(result)))
-	for _, id := range peer.peersIds {
-		record4id := peer.record[id]
-		record4id.index += epoch[id]
-		peer.record[id] = record4id
+	if len(hashTables) != 0 {
+		solution := newSolution(hashTables)
+		result := solution.getResult()
+		// 执行交易
+		peer.execParallelingImpl(result)
+		//peer.addExecNumber(getOpsNumber(result))
+		peer.log("exec ops:" + strconv.Itoa(getTxNumber(result)))
+		for _, id := range peer.peersIds {
+			record4id := peer.record[id]
+			record4id.index += epoch[id]
+			peer.record[id] = record4id
+		}
+		peer.execNumber.number += getTxNumber(result)
+		//peer.NotExecBlockIndex += epoch[peer.id]
+		peer.mu.Unlock()
 	}
-	peer.execNumber.number += getTxNumber(result)
-	//peer.NotExecBlockIndex += epoch[peer.id]
-	peer.mu.Unlock()
 
 }
 func (peer *Peer) RecordLog() string {
