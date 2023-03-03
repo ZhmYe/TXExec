@@ -60,6 +60,7 @@ func (solution *Solution) getResult() map[string]StateSet {
 	for i := 1; i < solution.peerNumber; i++ {
 		solution.result = solution.combine(solution.result, solution.hashtable[i])
 	}
+	fmt.Println(getTxNumber(solution.result))
 	return solution.result
 }
 func getTxNumber(a map[string]StateSet) int {
@@ -68,7 +69,7 @@ func getTxNumber(a map[string]StateSet) int {
 		length += len(stateSet.ReadSet)
 		length += len(stateSet.WriteSet)
 	}
-	fmt.Println(length)
+	//fmt.Println(length)
 	return length / config.OpsPerTx
 }
 func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) map[string]StateSet {
