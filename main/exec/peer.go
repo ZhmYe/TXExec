@@ -133,6 +133,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 			}
 		}
 	}
+	fmt.Println(getTxNumber(hashtable))
 	return hashtable
 }
 
