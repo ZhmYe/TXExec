@@ -131,7 +131,6 @@ func (peer *Peer) getHashTable(id int, bias int) map[string][]Unit {
 }
 
 func (peer *Peer) execParallelingImpl(hashtable map[string][]Unit) {
-	// 暂时先写不同key串行
 	keyTable := make([]string, 0)
 	for key, _ := range hashtable {
 		keyTable = append(keyTable, key)
