@@ -111,26 +111,32 @@ func (peer *Peer) string() string {
 }
 
 // 获取当前epoch中的{state: op->op}
-func (peer *Peer) getHashTable(id int, bias int) map[string][]Unit {
-	hashtable := make(map[string][]Unit)
+func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
+	hashtable := make(map[string]StateSet)
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
 		tmpTx := record.blocks[i+record.index].txs
 		for txIndex, tx := range tmpTx {
 			for _, op := range tx.Ops {
-				if hashtable[op.Key] == nil {
-					hashtable[op.Key] = make([]Unit, 0)
+				_, ok := hashtable[op.Key]
+				if !ok {
+					hashtable[op.Key] = *newStateSet()
 				}
 				txHash := strconv.Itoa(peer.id) + "_" + strconv.Itoa(i+record.index) + "_" + strconv.Itoa(txIndex)
 				unit := newUnit(op, txHash)
-				hashtable[op.Key] = append(hashtable[op.Key], *unit)
+				stateSet := hashtable[op.Key]
+				if unit.op.Type == OpRead {
+					stateSet.appendToReadSet(*unit)
+				} else {
+					stateSet.appendToWriteSet(*unit)
+				}
 			}
 		}
 	}
 	return hashtable
 }
 
-func (peer *Peer) execParallelingImpl(hashtable map[string][]Unit) {
+func (peer *Peer) execParallelingImpl(hashtable map[string]StateSet) {
 	keyTable := make([]string, 0)
 	for key, _ := range hashtable {
 		keyTable = append(keyTable, key)
@@ -147,14 +153,13 @@ func (peer *Peer) execParallelingImpl(hashtable map[string][]Unit) {
 				if index+i >= len(keyTable) {
 					return
 				}
-				for _, unit := range hashtable[keyTable[index+i]] {
+				for _, unit := range hashtable[keyTable[index+i]].ReadSet {
 					op := unit.op
-					if op.Type == OpRead {
-						Read(op.Key)
-					}
-					if op.Type == OpWrite {
-						Write(op.Key, op.Val)
-					}
+					Read(op.Key)
+				}
+				for _, unit := range hashtable[keyTable[index+i]].WriteSet {
+					op := unit.op
+					Write(op.Key, op.Val)
 				}
 			}(tmp, &wg)
 		}
@@ -172,7 +177,7 @@ func (peer *Peer) addExecNumber(extra int) {
 }
 func (peer *Peer) execParalleling(epoch map[int]int) {
 	peer.mu.Lock()
-	hashTables := make([]map[string][]Unit, 0)
+	hashTables := make([]map[string]StateSet, 0)
 	for id, bias := range epoch {
 		hashTables = append(hashTables, peer.getHashTable(id, bias))
 	}
@@ -181,13 +186,13 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 	// 执行交易
 	peer.execParallelingImpl(result)
 	//peer.addExecNumber(getOpsNumber(result))
-	peer.log("exec ops:" + strconv.Itoa(getOpsNumber(result)))
+	peer.log("exec ops:" + strconv.Itoa(getTxNumber(result)))
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
 		record4id.index += epoch[id]
 		peer.record[id] = record4id
 	}
-	peer.execNumber.number += getOpsNumber(result)
+	peer.execNumber.number += getTxNumber(result)
 	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
 
