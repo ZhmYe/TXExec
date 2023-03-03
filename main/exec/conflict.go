@@ -38,27 +38,27 @@ func solveConflict(blocks []Block) {
 		hashTables = append(hashTables, hashtable)
 	}
 	solutionByBaseLine := newSolution(hashTables)
-	resultByBaseLine := solutionByBaseLine.getResult(Baseline)
+	resultByBaseLine := solutionByBaseLine.getResult()
 	lengthAfterSolveByBaseLine := 0
 	for _, value := range resultByBaseLine {
 		lengthAfterSolveByBaseLine += len(value)
 	}
 	//fmt.Println(getOpsNumber(hashTables[0]))
-	solutionByIndexChoose := newSolution(hashTables)
-	//fmt.Println(getOpsNumber(solutionByIndexChoose.result))
-	resultByIndexChoose := solutionByIndexChoose.getResult(IndexChoose)
-	lengthAfterSolveByIndexChoose := 0
-	for _, value := range resultByIndexChoose {
-		lengthAfterSolveByIndexChoose += len(value)
-	}
+	//solutionByIndexChoose := newSolution(hashTables)
+	////fmt.Println(getOpsNumber(solutionByIndexChoose.result))
+	//resultByIndexChoose := solutionByIndexChoose.getResult(IndexChoose)
+	//lengthAfterSolveByIndexChoose := 0
+	//for _, value := range resultByIndexChoose {
+	//	lengthAfterSolveByIndexChoose += len(value)
+	//}
 	fmt.Print("total ops: ")
 	fmt.Println(lengthBeforeSolve)
 	//fmt.Println(lengthAfterSolveByBaseLine)
 	//fmt.Println(lengthAfterSolveByIndexChoose)
 	fmt.Print("abort rate by baseline:")
 	fmt.Println(1 - float64(lengthAfterSolveByBaseLine)/float64(lengthBeforeSolve))
-	fmt.Print("abort rate by IndexChoose:")
-	fmt.Println(1 - float64(lengthAfterSolveByIndexChoose)/float64(lengthBeforeSolve))
+	//fmt.Print("abort rate by IndexChoose:")
+	//fmt.Println(1 - float64(lengthAfterSolveByIndexChoose)/float64(lengthBeforeSolve))
 }
 func Test() {
 	blocks := generateBlocks(config.PeerNumber)

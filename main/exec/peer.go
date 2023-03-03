@@ -38,6 +38,18 @@ func (record *Record) appendBlock(block Block) {
 	record.blocks = append(record.blocks, block)
 }
 
+type Unit struct {
+	op     Op     // 实际执行的操作
+	txHash string // 交易标识
+}
+
+func newUnit(op Op, txHash string) *Unit {
+	unit := new(Unit)
+	unit.op = op
+	unit.txHash = txHash
+	return unit
+}
+
 type OpsNumber struct {
 	number int
 	id     int
@@ -99,24 +111,26 @@ func (peer *Peer) string() string {
 }
 
 // 获取当前epoch中的{state: op->op}
-func (peer *Peer) getHashTable(id int, bias int) map[string][]Op {
-	hashtable := make(map[string][]Op)
+func (peer *Peer) getHashTable(id int, bias int) map[string][]Unit {
+	hashtable := make(map[string][]Unit)
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
 		tmpTx := record.blocks[i+record.index].txs
-		for _, tx := range tmpTx {
+		for txIndex, tx := range tmpTx {
 			for _, op := range tx.Ops {
 				if hashtable[op.Key] == nil {
-					hashtable[op.Key] = make([]Op, 0)
+					hashtable[op.Key] = make([]Unit, 0)
 				}
-				hashtable[op.Key] = append(hashtable[op.Key], op)
+				txHash := strconv.Itoa(peer.id) + "_" + strconv.Itoa(i+record.index) + "_" + strconv.Itoa(txIndex)
+				unit := newUnit(op, txHash)
+				hashtable[op.Key] = append(hashtable[op.Key], *unit)
 			}
 		}
 	}
 	return hashtable
 }
 
-func (peer *Peer) execParallelingImpl(hashtable map[string][]Op) {
+func (peer *Peer) execParallelingImpl(hashtable map[string][]Unit) {
 	// 暂时先写不同key串行
 	keyTable := make([]string, 0)
 	for key, _ := range hashtable {
@@ -134,7 +148,8 @@ func (peer *Peer) execParallelingImpl(hashtable map[string][]Op) {
 				if index+i >= len(keyTable) {
 					return
 				}
-				for _, op := range hashtable[keyTable[index+i]] {
+				for _, unit := range hashtable[keyTable[index+i]] {
+					op := unit.op
 					if op.Type == OpRead {
 						Read(op.Key)
 					}
@@ -158,12 +173,12 @@ func (peer *Peer) addExecNumber(extra int) {
 }
 func (peer *Peer) execParalleling(epoch map[int]int) {
 	peer.mu.Lock()
-	hashTables := make([]map[string][]Op, 0)
+	hashTables := make([]map[string][]Unit, 0)
 	for id, bias := range epoch {
 		hashTables = append(hashTables, peer.getHashTable(id, bias))
 	}
 	solution := newSolution(hashTables)
-	result := solution.getResult(IndexChoose)
+	result := solution.getResult()
 	// 执行交易
 	peer.execParallelingImpl(result)
 	//peer.addExecNumber(getOpsNumber(result))
