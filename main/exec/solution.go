@@ -68,12 +68,13 @@ func getTxNumber(a map[string]StateSet) int {
 		length += len(stateSet.ReadSet)
 		length += len(stateSet.WriteSet)
 	}
-	fmt.Println(length)
 	return length / config.OpsPerTx
 }
 func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) map[string]StateSet {
 	//fmt.Print("original length:")
 	//fmt.Println(getOpsNumber(a) + getOpsNumber(b))
+	fmt.Println(getTxNumber(a))
+	fmt.Println(getTxNumber(b))
 	abortMap := make(map[string]bool, 0)
 	for key, _ := range b {
 		_, ok := a[key]
@@ -86,8 +87,8 @@ func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) 
 			a[key] = report.remain
 			abort := report.abort
 			for _, txHash := range abort {
-				_, ok := abortMap[txHash]
-				if !ok {
+				_, exist := abortMap[txHash]
+				if !exist {
 					abortMap[txHash] = true
 				}
 			}
