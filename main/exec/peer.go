@@ -200,8 +200,8 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 		}
 		peer.execNumber.number += getTxNumber(result)
 		//peer.NotExecBlockIndex += epoch[peer.id]
-		peer.mu.Unlock()
 	}
+	peer.mu.Unlock()
 
 }
 func (peer *Peer) RecordLog() string {
