@@ -384,7 +384,7 @@ func (peer *Peer) execWaiting() {
 		record4id.index += 1
 		peer.record[id] = record4id
 	}
-	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum * config.OpsPerTx
+	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
 	//peer.NotExecBlockIndex += epoch[peer.id]
 	peer.mu.Unlock()
 }
