@@ -125,6 +125,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 				txHash := strconv.Itoa(peer.id) + "_" + strconv.Itoa(i+record.index) + "_" + strconv.Itoa(txIndex)
 				unit := newUnit(op, txHash)
 				stateSet := hashtable[op.Key]
+				fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
 				if unit.op.Type == OpRead {
 					stateSet.appendToReadSet(*unit)
 				} else {
@@ -133,7 +134,6 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 			}
 		}
 	}
-	fmt.Println(getTxNumber(hashtable))
 	return hashtable
 }
 
