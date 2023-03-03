@@ -1,6 +1,9 @@
 package exec
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type StateSet struct {
 	ReadSet  []Unit // 读集
@@ -73,8 +76,8 @@ func getTxNumber(a map[string]StateSet) int {
 func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) map[string]StateSet {
 	//fmt.Print("original length:")
 	//fmt.Println(getOpsNumber(a) + getOpsNumber(b))
-	fmt.Println(getTxNumber(a))
-	fmt.Println(getTxNumber(b))
+	fmt.Println("a:" + strconv.Itoa(getTxNumber(a)))
+	//fmt.Println(getTxNumber(b))
 	abortMap := make(map[string]bool, 0)
 	for key, _ := range b {
 		_, ok := a[key]
