@@ -371,8 +371,6 @@ func (peer *Peer) execWaiting() {
 	}
 	// 执行交易
 	peer.execWaitingImpl(blocks)
-	//peer.addExecNumber(getOpsNumber(result))
-	//fmt.Println("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
 	peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
