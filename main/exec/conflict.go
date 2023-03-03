@@ -15,17 +15,23 @@ func generateBlocks(PeerNumber int) []Block {
 	}
 	return blocks
 }
-func getFakeHashtable(block Block) map[string][]Unit {
-	hashtable := make(map[string][]Unit)
+func getFakeHashtable(block Block) map[string]StateSet {
+	hashtable := make(map[string]StateSet)
 	//length := 0
 	for txIndex, tx := range block.txs {
 		for _, op := range tx.Ops {
-			if hashtable[op.Key] == nil {
-				hashtable[op.Key] = make([]Unit, 0)
+			_, ok := hashtable[op.Key]
+			if !ok {
+				hashtable[op.Key] = *newStateSet()
 			}
 			txHash := strconv.Itoa(rand.Intn(config.PeerNumber)) + "_" + strconv.Itoa(rand.Intn(10)) + "_" + strconv.Itoa(txIndex)
 			unit := newUnit(op, txHash)
-			hashtable[op.Key] = append(hashtable[op.Key], *unit)
+			stateSet := hashtable[op.Key]
+			if unit.op.Type == OpRead {
+				stateSet.appendToReadSet(*unit)
+			} else {
+				stateSet.appendToWriteSet(*unit)
+			}
 		}
 	}
 	//for _, v := range hashtable {
@@ -36,7 +42,7 @@ func getFakeHashtable(block Block) map[string][]Unit {
 }
 
 func solveConflict(blocks []Block) {
-	hashTables := make([]map[string][]Unit, 0)
+	hashTables := make([]map[string]StateSet, 0)
 	lengthBeforeSolve := 0
 	for _, block := range blocks {
 		lengthBeforeSolve += len(block.txs) * config.OpsPerTx
@@ -46,9 +52,11 @@ func solveConflict(blocks []Block) {
 	solutionByBaseLine := newSolution(hashTables)
 	resultByBaseLine := solutionByBaseLine.getResult()
 	lengthAfterSolveByBaseLine := 0
-	for _, value := range resultByBaseLine {
-		lengthAfterSolveByBaseLine += len(value)
+	for _, set := range resultByBaseLine {
+		lengthAfterSolveByBaseLine += len(set.ReadSet)
+		lengthAfterSolveByBaseLine += len(set.WriteSet)
 	}
+	lengthAfterSolveByBaseLine /= config.OpsPerTx
 	//fmt.Println(getOpsNumber(hashTables[0]))
 	//solutionByIndexChoose := newSolution(hashTables)
 	////fmt.Println(getOpsNumber(solutionByIndexChoose.result))
@@ -57,7 +65,7 @@ func solveConflict(blocks []Block) {
 	//for _, value := range resultByIndexChoose {
 	//	lengthAfterSolveByIndexChoose += len(value)
 	//}
-	fmt.Print("total ops: ")
+	fmt.Print("total txs: ")
 	fmt.Println(lengthBeforeSolve)
 	//fmt.Println(lengthAfterSolveByBaseLine)
 	//fmt.Println(lengthAfterSolveByIndexChoose)
