@@ -43,10 +43,10 @@ type Unit struct {
 	tx *Tx // 交易标识
 }
 
-func newUnit(op Op, tx *Tx) *Unit {
+func newUnit(op Op, tx Tx) *Unit {
 	unit := new(Unit)
 	unit.op = op
-	unit.tx = tx
+	unit.tx = &tx
 	return unit
 }
 
@@ -122,7 +122,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 				if !ok {
 					hashtable[op.Key] = *newStateSet()
 				}
-				unit := newUnit(op, tx)
+				unit := newUnit(op, *tx)
 				stateSet := hashtable[op.Key]
 				//fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
 				if unit.op.Type == OpRead {
@@ -154,10 +154,8 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 			record := peer.record[id]
 			for i := 0; i < bias; i++ {
 				txs := record.blocks[i+record.index].txs
-				number := 0
 				for _, tx := range txs {
 					if !tx.abort {
-						number += 1
 						for _, op := range tx.Ops {
 							if op.Type == OpRead {
 								Read(op.Key)
@@ -167,7 +165,6 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 						}
 					}
 				}
-				fmt.Println(number - len(txs))
 			}
 		}(tmpId, tmpBias, &wg)
 	}
