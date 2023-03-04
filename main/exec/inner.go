@@ -1,15 +1,48 @@
 package exec
 
+import "sort"
+
 type OrderTxs struct {
 	order int  // 排序序列号
 	txs   []Tx // 这一序列运行的交易
 }
 
-func newOrderTxs(order int, txs []Tx) *OrderTxs {
+func newOrderTxs(order int) *OrderTxs {
 	orderTxs := new(OrderTxs)
 	orderTxs.order = order
-	orderTxs.txs = txs
+	orderTxs.txs = make([]Tx, 0)
 	return orderTxs
+}
+func (oderTxs *OrderTxs) appendTx(tx Tx) {
+	oderTxs.txs = append(oderTxs.txs, tx)
+}
+func getAllOrderTxs(blocks []Block) []OrderTxs {
+	tmpMap := make(map[int]OrderTxs, 0)
+	for _, block := range blocks {
+		for _, tx := range block.txs {
+			if tx.abort {
+				continue
+			}
+			_, exist := tmpMap[tx.sequence]
+			if !exist {
+				tmpMap[tx.sequence] = *newOrderTxs(tx.sequence)
+			} else {
+				orderTxs := tmpMap[tx.sequence]
+				orderTxs.appendTx(*tx)
+				tmpMap[tx.sequence] = orderTxs
+			}
+		}
+	}
+	sortedKeys := make([]int, 0)
+	for key, _ := range tmpMap {
+		sortedKeys = append(sortedKeys, key)
+	}
+	sort.Ints(sortedKeys)
+	result := make([]OrderTxs, 0)
+	for _, key := range sortedKeys {
+		result = append(result, tmpMap[key])
+	}
+	return result
 }
 func getMinSeq(sortedRSet []Unit) int {
 	minSeq := 100000000

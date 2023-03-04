@@ -158,32 +158,52 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 		tmpBias := bias
 		hashtable := peer.getHashTable(id, bias)
 		TransactionSort(hashtable)
-		//go func(id int, bias int, wg *sync.WaitGroup) {
-		//	defer wg.Done()
-		//
-		//}(tmpId, tmpBias, &wg)
 		go func(id int, bias int, wg *sync.WaitGroup) {
 			defer wg.Done()
-			//txNumber := 0
 			record := peer.record[id]
-			for i := 0; i < bias; i++ {
-				txs := record.blocks[i+record.index].txs
-				for _, tx := range txs {
-					if !tx.abort {
-						//fmt.Println(tx.sequence)
-						//txNumber += 1
-						for _, op := range tx.Ops {
+			allBlock := record.blocks[record.index : record.index+bias]
+			orderedTxs := getAllOrderTxs(allBlock)
+			for _, each := range orderedTxs {
+				var wg2 sync.WaitGroup
+				wg2.Add(len(each.txs))
+				for _, tx := range each.txs {
+					tmpTx := tx
+					go func(tmpTx Tx, wg2 *sync.WaitGroup) {
+						defer wg2.Done()
+						for _, op := range tmpTx.Ops {
 							if op.Type == OpRead {
 								Read(op.Key)
 							} else {
 								Write(op.Key, op.Val)
 							}
 						}
-					}
+					}(tmpTx, &wg2)
 				}
+				wg2.Wait()
 			}
-			//channel <- txNumber
 		}(tmpId, tmpBias, &wg)
+		//go func(id int, bias int, wg *sync.WaitGroup) {
+		//	defer wg.Done()
+		//	//txNumber := 0
+		//	record := peer.record[id]
+		//	for i := 0; i < bias; i++ {
+		//		txs := record.blocks[i+record.index].txs
+		//		for _, tx := range txs {
+		//			if !tx.abort {
+		//				//fmt.Println(tx.sequence)
+		//				//txNumber += 1
+		//				for _, op := range tx.Ops {
+		//					if op.Type == OpRead {
+		//						Read(op.Key)
+		//					} else {
+		//						Write(op.Key, op.Val)
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
+		//	//channel <- txNumber
+		//}(tmpId, tmpBias, &wg)
 	}
 	wg.Wait()
 	//total := 0
