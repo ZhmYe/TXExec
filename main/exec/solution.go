@@ -1,7 +1,5 @@
 package exec
 
-import "fmt"
-
 type StateSet struct {
 	ReadSet  []Unit // 读集
 	WriteSet []Unit // 写集
@@ -124,7 +122,7 @@ func getNotAbortLength(a StateSet) int {
 func solveConflictBaseLine(a StateSet, b StateSet) StateSet {
 	c := newStateSet()
 	var abortSet []Unit
-	fmt.Println(len(a.WriteSet), len(a.ReadSet))
+	//fmt.Println(len(a.WriteSet), len(a.ReadSet))
 	if getNotAbortLength(a) < getNotAbortLength(b) {
 		for _, unit := range b.WriteSet {
 			c.WriteSet = append(c.WriteSet, unit)
