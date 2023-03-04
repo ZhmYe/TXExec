@@ -163,6 +163,8 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 								Write(op.Key, op.Val)
 							}
 						}
+					} else {
+						fmt.Println("abort...")
 					}
 				}
 			}

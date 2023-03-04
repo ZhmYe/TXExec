@@ -2,8 +2,6 @@ package exec
 
 import (
 	"fmt"
-	"math/rand"
-	"strconv"
 )
 
 func generateBlocks(PeerNumber int) []Block {
@@ -18,14 +16,14 @@ func generateBlocks(PeerNumber int) []Block {
 func getFakeHashtable(block Block) map[string]StateSet {
 	hashtable := make(map[string]StateSet)
 	//length := 0
-	for txIndex, tx := range block.txs {
+	for _, tx := range block.txs {
 		for _, op := range tx.Ops {
 			_, ok := hashtable[op.Key]
 			if !ok {
 				hashtable[op.Key] = *newStateSet()
 			}
-			txHash := strconv.Itoa(rand.Intn(config.PeerNumber)) + "_" + strconv.Itoa(rand.Intn(10)) + "_" + strconv.Itoa(txIndex)
-			unit := newUnit(op, txHash)
+			//txHash := strconv.Itoa(rand.Intn(config.PeerNumber)) + "_" + strconv.Itoa(rand.Intn(10)) + "_" + strconv.Itoa(txIndex)
+			unit := newUnit(op, tx)
 			stateSet := hashtable[op.Key]
 			if unit.op.Type == OpRead {
 				stateSet.appendToReadSet(*unit)
