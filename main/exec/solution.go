@@ -127,6 +127,7 @@ func getNotAbortLength(a StateSet) int {
 func solveConflictBaseLine(a StateSet, b StateSet) StateSet {
 	c := newStateSet()
 	var abortSet []Unit
+	fmt.Println(len(a.WriteSet), len(b.WriteSet))
 	if getNotAbortLength(a) < getNotAbortLength(b) {
 		for _, unit := range b.WriteSet {
 			c.WriteSet = append(c.WriteSet, unit)
@@ -145,7 +146,6 @@ func solveConflictBaseLine(a StateSet, b StateSet) StateSet {
 	c.ReadSet = append(a.ReadSet, b.ReadSet...)
 	//abort := make([]string, 0)
 	for _, unit := range abortSet {
-		fmt.Println(111)
 		unit.tx.abort = true
 	}
 	//report := newAbortReport(*c, abort)
