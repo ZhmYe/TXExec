@@ -106,7 +106,7 @@ func TransactionSort(hashtable map[string]StateSet) {
 		}
 		// line 30 - 35
 		for _, unit := range Rw.WriteSet {
-			if unit.tx.sequence != -1 {
+			if unit.tx.sequence == -1 {
 				unit.tx.sequence = writeSeq
 				writeSeq += 1
 			}
