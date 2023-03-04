@@ -71,10 +71,10 @@ type Peer struct {
 	epochTimeStamp time.Time     // 最后一次执行epoch的时间
 	//blocks            []Block        // 当前节点所出的blocks
 	//NotExecBlockIndex int            // 块高最小的还未被执行的块高度
-	record         map[int]Record // 各个节点的出块记录, key为节点id
-	blockTimeout   time.Duration  // 出块时间
-	blockTimeStamp time.Time      // 最后一次出块的时间
-	execNumber     OpsNumber      //执行的ops数量
+	record         map[int]*Record // 各个节点的出块记录, key为节点id
+	blockTimeout   time.Duration   // 出块时间
+	blockTimeStamp time.Time       // 最后一次出块的时间
+	execNumber     OpsNumber       //执行的ops数量
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
@@ -163,6 +163,8 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 								Write(op.Key, op.Val)
 							}
 						}
+					} else {
+						fmt.Println("abort...")
 					}
 				}
 			}
@@ -216,7 +218,7 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 		// 执行交易
 		peer.execParallelingImpl(epoch)
 		//peer.addExecNumber(getOpsNumber(result))
-		peer.log("exec ops:" + strconv.Itoa(getTxNumber(result)))
+		peer.log("exec txs:" + strconv.Itoa(getTxNumber(result)))
 		for _, id := range peer.peersIds {
 			record4id := peer.record[id]
 			record4id.index += epoch[id]

@@ -13,10 +13,10 @@ func generateIds(number int) []int {
 	}
 	return result
 }
-func generateRecordMap(ids []int) map[int]Record {
-	record := make(map[int]Record, 0)
+func generateRecordMap(ids []int) map[int]*Record {
+	record := make(map[int]*Record, 0)
 	for _, id := range ids {
-		record[id] = *newRecord(id)
+		record[id] = newRecord(id)
 	}
 	return record
 }
