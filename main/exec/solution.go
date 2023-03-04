@@ -136,6 +136,7 @@ func solveConflictBaseLine(a StateSet, b StateSet) StateSet {
 	}
 	c.ReadSet = append(a.ReadSet, b.ReadSet...)
 	//abort := make([]string, 0)
+	fmt.Println(len(abortSet))
 	for _, unit := range abortSet {
 		fmt.Println(111)
 		unit.tx.abort = true
