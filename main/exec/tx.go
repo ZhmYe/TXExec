@@ -79,16 +79,16 @@ type Tx struct {
 
 // 根据热点率获取随机的key todo
 func getRandomKeyWithHot() string {
-	//r := rand.Float64()
-	//n := int(float64(len(karr)) * config.HotKey)
-	//idx := 0
-	//if r < config.HotKeyRate {
-	//	idx = rand.Intn(n)
-	//} else {
-	//	idx = rand.Intn(len(karr)-n) + n
-	//}
+	r := rand.Float64()
+	n := int(float64(len(karr)) * config.HotKey)
+	idx := 0
+	if r < config.HotKeyRate {
+		idx = rand.Intn(n)
+	} else {
+		idx = rand.Intn(len(karr)-n) + n
+	}
 	//fmt.Println(111)
-	idx := getNormalRandom()
+	//idx := getNormalRandom()
 	//fmt.Println(idx)
 	return karr[idx]
 }
