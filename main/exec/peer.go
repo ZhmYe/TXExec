@@ -154,8 +154,10 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 			record := peer.record[id]
 			for i := 0; i < bias; i++ {
 				txs := record.blocks[i+record.index].txs
+				number := 0
 				for _, tx := range txs {
 					if !tx.abort {
+						number += 1
 						for _, op := range tx.Ops {
 							if op.Type == OpRead {
 								Read(op.Key)
@@ -163,10 +165,9 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 								Write(op.Key, op.Val)
 							}
 						}
-					} else {
-						fmt.Println("abort...")
 					}
 				}
+				fmt.Println(number - len(txs))
 			}
 		}(tmpId, tmpBias, &wg)
 	}
