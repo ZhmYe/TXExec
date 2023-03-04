@@ -166,7 +166,7 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
 				txs := record.blocks[i+record.index].txs
 				for _, tx := range txs {
 					if !tx.abort {
-						//fmt.Println(tx.sequence)
+						fmt.Println(tx.sequence)
 						txNumber += 1
 						for _, op := range tx.Ops {
 							if op.Type == OpRead {

@@ -1,7 +1,5 @@
 package exec
 
-import "fmt"
-
 type OrderTxs struct {
 	order int  // 排序序列号
 	txs   []Tx // 这一序列运行的交易
@@ -35,7 +33,6 @@ func getSortedRSet(Rw StateSet) []Unit {
 	sortedRSet := make([]Unit, 0)
 	for _, unit := range Rw.ReadSet {
 		if unit.tx.sequence != -1 {
-			fmt.Println(111)
 			sortedRSet = append(sortedRSet, unit)
 		}
 	}
