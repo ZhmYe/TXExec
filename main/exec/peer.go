@@ -117,6 +117,9 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	for i := 0; i < bias; i++ {
 		tmpTx := record.blocks[i+record.index].txs
 		for _, tx := range tmpTx {
+			if tx.abort {
+				continue
+			}
 			for _, op := range tx.Ops {
 				_, ok := hashtable[op.Key]
 				if !ok {
