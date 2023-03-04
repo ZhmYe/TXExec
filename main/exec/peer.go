@@ -164,14 +164,14 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 		//}(tmpId, tmpBias, &wg)
 		go func(id int, bias int, wg *sync.WaitGroup) {
 			defer wg.Done()
-			txNumber := 0
+			//txNumber := 0
 			record := peer.record[id]
 			for i := 0; i < bias; i++ {
 				txs := record.blocks[i+record.index].txs
 				for _, tx := range txs {
 					if !tx.abort {
 						//fmt.Println(tx.sequence)
-						txNumber += 1
+						//txNumber += 1
 						for _, op := range tx.Ops {
 							if op.Type == OpRead {
 								Read(op.Key)
