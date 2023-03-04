@@ -156,8 +156,8 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 	for id, bias := range epoch {
 		tmpId := id
 		tmpBias := bias
-		//hashtable := peer.getHashTable(id, bias)
-		//TransactionSort(hashtable)
+		hashtable := peer.getHashTable(id, bias)
+		TransactionSort(hashtable)
 		//go func(id int, bias int, wg *sync.WaitGroup) {
 		//	defer wg.Done()
 		//
