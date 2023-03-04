@@ -173,10 +173,12 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 		}(tmpId, tmpBias, &wg)
 	}
 	wg.Wait()
-	for txNumber := range channel {
-		fmt.Print(strconv.Itoa(txNumber) + " ")
+	for i := 0; i < config.PeerNumber; i++ {
+		fmt.Print(strconv.Itoa(<-channel) + " ")
 	}
+	fmt.Println()
 	close(channel)
+
 	//for {
 	//	var wg sync.WaitGroup
 	//	wg.Add(jump)
