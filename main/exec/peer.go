@@ -23,7 +23,7 @@ const (
 
 type Record struct {
 	id     int
-	blocks []Block
+	blocks [50]Block
 	index  int // 还未被执行的区块index
 }
 

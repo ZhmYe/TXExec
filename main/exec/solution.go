@@ -1,5 +1,7 @@
 package exec
 
+import "fmt"
+
 type StateSet struct {
 	ReadSet  []Unit // 读集
 	WriteSet []Unit // 写集
@@ -135,6 +137,7 @@ func solveConflictBaseLine(a StateSet, b StateSet) StateSet {
 	c.ReadSet = append(a.ReadSet, b.ReadSet...)
 	//abort := make([]string, 0)
 	for _, unit := range abortSet {
+		fmt.Println(111)
 		unit.tx.abort = true
 	}
 	//report := newAbortReport(*c, abort)
