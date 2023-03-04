@@ -146,16 +146,19 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 	//var jump = 4
 	var wg sync.WaitGroup
 	wg.Add(config.PeerNumber)
+	channel := make(chan int, config.PeerNumber)
 	for id, bias := range epoch {
 		tmpId := id
 		tmpBias := bias
 		go func(id int, bias int, wg *sync.WaitGroup) {
 			defer wg.Done()
+			txNumber := 0
 			record := peer.record[id]
 			for i := 0; i < bias; i++ {
 				txs := record.blocks[i+record.index].txs
 				for _, tx := range txs {
 					if !tx.abort {
+						txNumber += 1
 						for _, op := range tx.Ops {
 							if op.Type == OpRead {
 								Read(op.Key)
@@ -166,9 +169,13 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 					}
 				}
 			}
+			channel <- txNumber
 		}(tmpId, tmpBias, &wg)
 	}
 	wg.Wait()
+	for txNumber := range channel {
+		fmt.Print(strconv.Itoa(txNumber) + " ")
+	}
 	//for {
 	//	var wg sync.WaitGroup
 	//	wg.Add(jump)
@@ -201,6 +208,7 @@ func (peer *Peer) addExecNumber(extra int) {
 	tmp.number += extra
 	peer.execNumber = tmp
 }
+
 func (peer *Peer) execParalleling(epoch map[int]int) {
 	peer.mu.Lock()
 	hashTables := make([]map[string]StateSet, 0)
