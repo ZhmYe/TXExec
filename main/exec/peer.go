@@ -137,7 +137,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	return hashtable
 }
 
-func (peer *Peer) execParallelingImpl(epoch map[int]int) {
+func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
 	//keyTable := make([]string, 0)
 	//for key, _ := range hashtable {
 	//	keyTable = append(keyTable, key)
@@ -173,12 +173,12 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 		}(tmpId, tmpBias, &wg)
 	}
 	wg.Wait()
+	total := 0
 	for i := 0; i < config.PeerNumber; i++ {
-		fmt.Print(strconv.Itoa(<-channel) + " ")
+		total += <-channel
 	}
-	fmt.Println()
 	close(channel)
-
+	return total
 	//for {
 	//	var wg sync.WaitGroup
 	//	wg.Add(jump)
@@ -223,17 +223,17 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 	}
 	if len(hashTables) != 0 {
 		solution := newSolution(hashTables)
-		result := solution.getResult()
+		solution.getResult()
 		// 执行交易
-		peer.execParallelingImpl(epoch)
+		total := peer.execParallelingImpl(epoch)
 		//peer.addExecNumber(getOpsNumber(result))
-		peer.log("exec txs:" + strconv.Itoa(getTxNumber(result)))
+		peer.log("exec txs:" + strconv.Itoa(total))
 		for _, id := range peer.peersIds {
 			record4id := peer.record[id]
 			record4id.index += epoch[id]
 			peer.record[id] = record4id
 		}
-		peer.execNumber.number += getTxNumber(result)
+		peer.execNumber.number += total
 		//peer.NotExecBlockIndex += epoch[peer.id]
 	}
 	peer.mu.Unlock()

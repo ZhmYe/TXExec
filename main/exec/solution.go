@@ -51,11 +51,11 @@ func newSolution(hashtable []map[string]StateSet) *Solution {
 	solution.hashtable = hashtable
 	return solution
 }
-func (solution *Solution) getResult() map[string]StateSet {
+func (solution *Solution) getResult() {
 	for i := 1; i < solution.peerNumber; i++ {
 		solution.result = solution.combine(solution.result, solution.hashtable[i])
 	}
-	return solution.result
+	//return solution.result
 }
 func getTxNumber(a map[string]StateSet) int {
 	length := 0
