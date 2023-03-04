@@ -143,7 +143,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	return hashtable
 }
 
-func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
+func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 	//keyTable := make([]string, 0)
 	//for key, _ := range hashtable {
 	//	keyTable = append(keyTable, key)
@@ -152,12 +152,16 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
 	//var jump = 4
 	var wg sync.WaitGroup
 	wg.Add(config.PeerNumber)
-	channel := make(chan int, config.PeerNumber)
+	//channel := make(chan int, config.PeerNumber)
 	for id, bias := range epoch {
 		tmpId := id
 		tmpBias := bias
-		hashtable := peer.getHashTable(id, bias)
-		TransactionSort(hashtable)
+		//hashtable := peer.getHashTable(id, bias)
+		//TransactionSort(hashtable)
+		//go func(id int, bias int, wg *sync.WaitGroup) {
+		//	defer wg.Done()
+		//
+		//}(tmpId, tmpBias, &wg)
 		go func(id int, bias int, wg *sync.WaitGroup) {
 			defer wg.Done()
 			txNumber := 0
@@ -178,16 +182,16 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
 					}
 				}
 			}
-			channel <- txNumber
+			//channel <- txNumber
 		}(tmpId, tmpBias, &wg)
 	}
 	wg.Wait()
-	total := 0
-	for i := 0; i < config.PeerNumber; i++ {
-		total += <-channel
-	}
-	close(channel)
-	return total
+	//total := 0
+	//for i := 0; i < config.PeerNumber; i++ {
+	//	total += <-channel
+	//}
+	//close(channel)
+	//return total
 	//for {
 	//	var wg sync.WaitGroup
 	//	wg.Add(jump)
@@ -234,15 +238,15 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 		solution := newSolution(hashTables)
 		solution.getResult()
 		// 执行交易
-		total := peer.execParallelingImpl(epoch)
+		peer.execParallelingImpl(epoch)
 		//peer.addExecNumber(getOpsNumber(result))
-		peer.log("exec txs:" + strconv.Itoa(total))
+		//peer.log("exec txs:" + strconv.Itoa(total))
 		for _, id := range peer.peersIds {
 			record4id := peer.record[id]
 			record4id.index += epoch[id]
 			peer.record[id] = record4id
 		}
-		peer.execNumber.number += total
+		//peer.execNumber.number += total
 		//peer.NotExecBlockIndex += epoch[peer.id]
 	}
 	peer.mu.Unlock()

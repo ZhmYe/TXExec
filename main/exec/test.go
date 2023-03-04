@@ -22,26 +22,35 @@ func generateRecordMap(ids []int) map[int]*Record {
 }
 
 type StatisticalResults struct {
-	records    map[int]*Record
-	execNumber int
+	records map[int]*Record
 }
 
-func newStatisticalResults(result map[int]*Record, execNumber int) *StatisticalResults {
+func (result *StatisticalResults) getExecNumber() int {
+	execNumber := 0
+	for _, record := range result.records {
+		for i := 0; i < record.index; i++ {
+			for _, tx := range record.blocks[i].txs {
+				if !tx.abort {
+					execNumber += 1
+				}
+			}
+		}
+	}
+	return execNumber
+}
+func newStatisticalResults(result map[int]*Record) *StatisticalResults {
 	newResult := new(StatisticalResults)
 	newResult.records = result
-	newResult.execNumber = execNumber
 	return newResult
 }
 func PeerStop() StatisticalResults {
 	result := make([]map[int]*Record, 0)
-	execNumber := make([]int, 0)
 	for _, peer := range peerMap {
 		peer.stop()
 		result = append(result, peer.record)
-		execNumber = append(execNumber, peer.execNumber.number)
 	}
 
-	return *newStatisticalResults(result[0], execNumber[0])
+	return *newStatisticalResults(result[0])
 }
 func PeerInit(runningType execType) {
 	//peerList.config = config
@@ -79,7 +88,7 @@ func PeerInit(runningType execType) {
 			fmt.Print("tps: ")
 			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
-			fmt.Println(1 - float64(statisticalResults.execNumber)/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)))
+			fmt.Println(1 - float64(statisticalResults.getExecNumber())/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)))
 			break
 		}
 	}
