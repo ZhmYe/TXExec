@@ -39,14 +39,16 @@ func (record *Record) appendBlock(block Block) {
 }
 
 type Unit struct {
-	op Op  // 实际执行的操作
-	tx *Tx // 交易标识
+	op     Op     // 实际执行的操作
+	tx     *Tx    // 交易标识
+	txHash string //交易哈希
 }
 
-func newUnit(op Op, tx *Tx) *Unit {
+func newUnit(op Op, tx *Tx, txHash string) *Unit {
 	unit := new(Unit)
 	unit.op = op
 	unit.tx = tx
+	unit.txHash = txHash
 	return unit
 }
 
@@ -116,7 +118,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
 		tmpTx := record.blocks[i+record.index].txs
-		for _, tx := range tmpTx {
+		for txIndex, tx := range tmpTx {
 			if tx.abort {
 				continue
 			}
@@ -125,7 +127,8 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 				if !ok {
 					hashtable[op.Key] = *newStateSet()
 				}
-				unit := newUnit(op, tx)
+				txHash := strconv.Itoa(rand.Intn(config.PeerNumber)) + "_" + strconv.Itoa(rand.Intn(10)) + "_" + strconv.Itoa(txIndex)
+				unit := newUnit(op, tx, txHash)
 				stateSet := hashtable[op.Key]
 				//fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
 				if unit.op.Type == OpRead {
@@ -153,6 +156,8 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
 	for id, bias := range epoch {
 		tmpId := id
 		tmpBias := bias
+		hashtable := peer.getHashTable(id, bias)
+		TransactionSort(hashtable)
 		go func(id int, bias int, wg *sync.WaitGroup) {
 			defer wg.Done()
 			txNumber := 0
@@ -161,6 +166,7 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) int {
 				txs := record.blocks[i+record.index].txs
 				for _, tx := range txs {
 					if !tx.abort {
+						fmt.Println(tx.sequence)
 						txNumber += 1
 						for _, op := range tx.Ops {
 							if op.Type == OpRead {
