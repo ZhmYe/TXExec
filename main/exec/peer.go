@@ -39,14 +39,14 @@ func (record *Record) appendBlock(block Block) {
 }
 
 type Unit struct {
-	op     Op     // 实际执行的操作
-	txHash string // 交易标识
+	op Op  // 实际执行的操作
+	tx *Tx // 交易标识
 }
 
-func newUnit(op Op, txHash string) *Unit {
+func newUnit(op Op, tx *Tx) *Unit {
 	unit := new(Unit)
 	unit.op = op
-	unit.txHash = txHash
+	unit.tx = tx
 	return unit
 }
 
@@ -116,14 +116,13 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	record := peer.record[id]
 	for i := 0; i < bias; i++ {
 		tmpTx := record.blocks[i+record.index].txs
-		for txIndex, tx := range tmpTx {
+		for _, tx := range tmpTx {
 			for _, op := range tx.Ops {
 				_, ok := hashtable[op.Key]
 				if !ok {
 					hashtable[op.Key] = *newStateSet()
 				}
-				txHash := strconv.Itoa(peer.id) + "_" + strconv.Itoa(i+record.index) + "_" + strconv.Itoa(txIndex)
-				unit := newUnit(op, txHash)
+				unit := newUnit(op, tx)
 				stateSet := hashtable[op.Key]
 				//fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
 				if unit.op.Type == OpRead {
@@ -138,39 +137,64 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	return hashtable
 }
 
-func (peer *Peer) execParallelingImpl(hashtable map[string]StateSet) {
-	keyTable := make([]string, 0)
-	for key, _ := range hashtable {
-		keyTable = append(keyTable, key)
+func (peer *Peer) execParallelingImpl(epoch map[int]int) {
+	//keyTable := make([]string, 0)
+	//for key, _ := range hashtable {
+	//	keyTable = append(keyTable, key)
+	//}
+	//var index = 0
+	//var jump = 4
+	var wg sync.WaitGroup
+	wg.Add(config.PeerNumber)
+	for id, bias := range epoch {
+		tmpId := id
+		tmpBias := bias
+		go func(id int, bias int, wg *sync.WaitGroup) {
+			defer wg.Done()
+			record := peer.record[id]
+			for i := 0; i < bias; i++ {
+				txs := record.blocks[i+record.index].txs
+				for _, tx := range txs {
+					if !tx.abort {
+						for _, op := range tx.Ops {
+							if op.Type == OpRead {
+								Read(op.Key)
+							} else {
+								Write(op.Key, op.Val)
+							}
+						}
+					}
+				}
+			}
+		}(tmpId, tmpBias, &wg)
 	}
-	var index = 0
-	var jump = 4
-	for {
-		var wg sync.WaitGroup
-		wg.Add(jump)
-		for i := 0; i < jump; i++ {
-			tmp := i
-			go func(i int, wg *sync.WaitGroup) {
-				defer wg.Done()
-				if index+i >= len(keyTable) {
-					return
-				}
-				for _, unit := range hashtable[keyTable[index+i]].ReadSet {
-					op := unit.op
-					Read(op.Key)
-				}
-				for _, unit := range hashtable[keyTable[index+i]].WriteSet {
-					op := unit.op
-					Write(op.Key, op.Val)
-				}
-			}(tmp, &wg)
-		}
-		wg.Wait()
-		index += jump
-		if index >= len(keyTable) {
-			break
-		}
-	}
+	wg.Wait()
+	//for {
+	//	var wg sync.WaitGroup
+	//	wg.Add(jump)
+	//	for i := 0; i < jump; i++ {
+	//		tmp := i
+	//		go func(i int, wg *sync.WaitGroup) {
+	//			defer wg.Done()
+	//			if index+i >= len(keyTable) {
+	//				return
+	//			}
+	//			for _, unit := range hashtable[keyTable[index+i]].ReadSet {
+	//				op := unit.op
+	//				Read(op.Key)
+	//			}
+	//			for _, unit := range hashtable[keyTable[index+i]].WriteSet {
+	//				op := unit.op
+	//				Write(op.Key, op.Val)
+	//			}
+	//		}(tmp, &wg)
+	//	}
+	//	wg.Wait()
+	//	index += jump
+	//	if index >= len(keyTable) {
+	//		break
+	//	}
+	//}
 }
 func (peer *Peer) addExecNumber(extra int) {
 	tmp := peer.execNumber
@@ -190,7 +214,7 @@ func (peer *Peer) execParalleling(epoch map[int]int) {
 		solution := newSolution(hashTables)
 		result := solution.getResult()
 		// 执行交易
-		peer.execParallelingImpl(result)
+		peer.execParallelingImpl(epoch)
 		//peer.addExecNumber(getOpsNumber(result))
 		peer.log("exec ops:" + strconv.Itoa(getTxNumber(result)))
 		for _, id := range peer.peersIds {

@@ -73,7 +73,8 @@ type Op struct {
 
 // Tx 交易
 type Tx struct {
-	Ops []Op // 交易中包含的操作
+	Ops   []Op // 交易中包含的操作
+	abort bool // 是否abort
 }
 
 // 根据热点率获取随机的key todo
@@ -125,7 +126,7 @@ func GenTxSet() []*Tx {
 				ops[j].Key = getRandomKeyWithHot()
 			}
 		}
-		txs[i] = &Tx{Ops: ops}
+		txs[i] = &Tx{Ops: ops, abort: false}
 	}
 	return txs
 }

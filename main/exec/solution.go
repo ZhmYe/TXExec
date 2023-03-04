@@ -19,17 +19,17 @@ func (stateSet *StateSet) appendToWriteSet(unit Unit) {
 	stateSet.WriteSet = append(stateSet.WriteSet, unit)
 }
 
-type AbortReport struct {
-	remain StateSet
-	abort  []string
-}
-
-func newAbortReport(remain StateSet, abort []string) *AbortReport {
-	report := new(AbortReport)
-	report.remain = remain
-	report.abort = abort
-	return report
-}
+//type AbortReport struct {
+//	remain StateSet
+//	abort  []string
+//}
+//
+//func newAbortReport(remain StateSet, abort []string) *AbortReport {
+//	report := new(AbortReport)
+//	report.remain = remain
+//	report.abort = abort
+//	return report
+//}
 
 type Solution struct {
 	peerNumber int
@@ -63,13 +63,12 @@ func (solution *Solution) getResult() map[string]StateSet {
 func getTxNumber(a map[string]StateSet) int {
 	length := 0
 	for _, stateSet := range a {
-		length += len(stateSet.ReadSet)
-		length += len(stateSet.WriteSet)
+		length += getNotAbortLength(stateSet)
 	}
 	return length / config.OpsPerTx
 }
 func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) map[string]StateSet {
-	abortMap := make(map[string]bool, 0)
+	//abortMap := make(map[string]bool, 0)
 	for key, _ := range b {
 		_, ok := a[key]
 		if ok {
@@ -77,45 +76,55 @@ func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) 
 		} else {
 			//if pattern == Baseline {
 			// baseline
-			report := solveConflictBaseLine(a[key], b[key])
-			a[key] = report.remain
-			abort := report.abort
-			for _, txHash := range abort {
-				_, exist := abortMap[txHash]
-				if !exist {
-					abortMap[txHash] = true
-				}
-			}
+			//report := solveConflictBaseLine(a[key], b[key])
+			//a[key] = report.remain
+			//abort := report.abort
+			a[key] = solveConflictBaseLine(a[key], b[key])
+			//for _, txHash := range abort {
+			//	_, exist := abortMap[txHash]
+			//	if !exist {
+			//		abortMap[txHash] = true
+			//	}
+			//}
 			//} else if pattern == IndexChoose {
 			//	// Index Choose 两两比较,写+写 则abort一个
 			//	a[key] = solveConflictIndexChoose(a[key], b[key])
 			//}
 		}
 	}
-	for key, set := range a {
-		newSet := newStateSet()
-		for _, unit := range set.ReadSet {
-			_, ok := abortMap[unit.txHash]
-			if !ok {
-				newSet.appendToReadSet(unit)
-			}
-		}
-		for _, unit := range set.WriteSet {
-			_, ok := abortMap[unit.txHash]
-			if !ok {
-				newSet.appendToWriteSet(unit)
-			}
-		}
-		a[key] = *newSet
-	}
+	//for key, set := range a {
+	//	newSet := newStateSet()
+	//	for _, unit := range set.ReadSet {
+	//		_, ok := abortMap[unit.txHash]
+	//		if !ok {
+	//			newSet.appendToReadSet(unit)
+	//		}
+	//	}
+	//	for _, unit := range set.WriteSet {
+	//		_, ok := abortMap[unit.txHash]
+	//		if !ok {
+	//			newSet.appendToWriteSet(unit)
+	//		}
+	//	}
+	//	a[key] = *newSet
+	//}
 	//fmt.Print("after:")
 	//fmt.Println(getOpsNumber(a))
 	return a
 }
-func solveConflictBaseLine(a StateSet, b StateSet) AbortReport {
+func getNotAbortLength(a StateSet) int {
+	length := 0
+	for _, unit := range a.WriteSet {
+		if !unit.tx.abort {
+			length += 1
+		}
+	}
+	return length
+}
+func solveConflictBaseLine(a StateSet, b StateSet) StateSet {
 	c := newStateSet()
 	var abortSet []Unit
-	if len(a.WriteSet) < len(b.WriteSet) {
+	if getNotAbortLength(a) < getNotAbortLength(b) {
 		c.WriteSet = b.WriteSet
 		abortSet = a.WriteSet
 	} else {
@@ -123,12 +132,13 @@ func solveConflictBaseLine(a StateSet, b StateSet) AbortReport {
 		abortSet = b.WriteSet
 	}
 	c.ReadSet = append(a.ReadSet, b.ReadSet...)
-	abort := make([]string, 0)
+	//abort := make([]string, 0)
 	for _, unit := range abortSet {
-		abort = append(abort, unit.txHash)
+		unit.tx.abort = true
 	}
-	report := newAbortReport(*c, abort)
-	return *report
+	//report := newAbortReport(*c, abort)
+	//return *report
+	return *c
 }
 
 //func solveConflictIndexChoose(a []Op, b []Op) []Op {
