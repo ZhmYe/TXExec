@@ -176,6 +176,7 @@ func (peer *Peer) execParallelingImpl(epoch map[int]int) {
 	for txNumber := range channel {
 		fmt.Print(strconv.Itoa(txNumber) + " ")
 	}
+	close(channel)
 	//for {
 	//	var wg sync.WaitGroup
 	//	wg.Add(jump)
