@@ -22,18 +22,18 @@ func generateRecordMap(ids []int) map[int]*Record {
 }
 
 type StatisticalResults struct {
-	records    map[int]Record
+	records    map[int]*Record
 	execNumber int
 }
 
-func newStatisticalResults(result map[int]Record, execNumber int) *StatisticalResults {
+func newStatisticalResults(result map[int]*Record, execNumber int) *StatisticalResults {
 	newResult := new(StatisticalResults)
 	newResult.records = result
 	newResult.execNumber = execNumber
 	return newResult
 }
 func PeerStop() StatisticalResults {
-	result := make([]map[int]Record, 0)
+	result := make([]map[int]*Record, 0)
 	execNumber := make([]int, 0)
 	for _, peer := range peerMap {
 		peer.stop()
