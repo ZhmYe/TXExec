@@ -43,10 +43,10 @@ type Unit struct {
 	tx *Tx // 交易标识
 }
 
-func newUnit(op Op, tx Tx) *Unit {
+func newUnit(op Op, tx *Tx) *Unit {
 	unit := new(Unit)
 	unit.op = op
-	unit.tx = &tx
+	unit.tx = tx
 	return unit
 }
 
@@ -122,7 +122,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 				if !ok {
 					hashtable[op.Key] = *newStateSet()
 				}
-				unit := newUnit(op, *tx)
+				unit := newUnit(op, tx)
 				stateSet := hashtable[op.Key]
 				//fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
 				if unit.op.Type == OpRead {
