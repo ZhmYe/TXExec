@@ -71,7 +71,7 @@ func (solution *Solution) combine(a map[string]StateSet, b map[string]StateSet) 
 	//abortMap := make(map[string]bool, 0)
 	for key, _ := range b {
 		_, ok := a[key]
-		if ok {
+		if !ok {
 			a[key] = b[key]
 		} else {
 			//if pattern == Baseline {
