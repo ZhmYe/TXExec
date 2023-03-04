@@ -63,6 +63,7 @@ func (solution *Solution) getResult() map[string]StateSet {
 func getTxNumber(a map[string]StateSet) int {
 	length := 0
 	for _, stateSet := range a {
+		length += len(stateSet.ReadSet)
 		length += getNotAbortLength(stateSet)
 	}
 	return length / config.OpsPerTx
