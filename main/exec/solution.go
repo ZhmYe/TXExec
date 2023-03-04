@@ -50,10 +50,6 @@ func newSolution(hashtable []map[string]StateSet) *Solution {
 	solution := new(Solution)
 	solution.peerNumber = len(hashtable)
 	solution.result = make(map[string]StateSet, 0)
-	for k, v := range hashtable[0] {
-		solution.result[k] = v
-		fmt.Println(len(v.WriteSet))
-	}
 	solution.hashtable = hashtable
 	return solution
 }
