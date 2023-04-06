@@ -13,8 +13,8 @@ func newOrderTxs(order int) *OrderTxs {
 	orderTxs.txs = make([]Tx, 0)
 	return orderTxs
 }
-func (oderTxs *OrderTxs) appendTx(tx Tx) {
-	oderTxs.txs = append(oderTxs.txs, tx)
+func (orderTxs *OrderTxs) appendTx(tx Tx) {
+	orderTxs.txs = append(orderTxs.txs, tx)
 }
 func getAllOrderTxs(blocks []Block) []OrderTxs {
 	tmpMap := make(map[int]OrderTxs, 0)

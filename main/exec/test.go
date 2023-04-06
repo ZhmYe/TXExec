@@ -52,7 +52,7 @@ func PeerStop() StatisticalResults {
 
 	return *newStatisticalResults(result[0])
 }
-func PeerInit(runningType execType) {
+func PeerInit() {
 	//peerList.config = config
 	peerId := generateIds(config.PeerNumber)
 	var timestamp = time.Now()
@@ -73,7 +73,7 @@ func PeerInit(runningType execType) {
 	}
 	for _, peer := range peerMap {
 		var tmp = peer
-		go tmp.start(runningType)
+		go tmp.start()
 	}
 	timeStart := time.Now()
 	for {

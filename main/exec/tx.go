@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"math/rand"
-	"strconv"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/syndtr/goleveldb/leveldb"
+	"math/rand"
+	"strconv"
 )
 
 var (
-	db   *leveldb.DB
-	karr []string // key array,由config中的originkeys数量生成
+	db             *leveldb.DB
+	karr           []string // key array,由config中的originkeys数量生成
+	spliceLength   int      // 分片长度
+	conflictLength int      // 公用长度
 	// kmap map[string]int
 )
 
@@ -28,15 +28,20 @@ func Init() {
 	}
 	// kmap = make(map[string]int, config.OriginKeys)
 	karr = make([]string, 0, config.OriginKeys) // 根据初始配置的key数量生成Key array
-	t0 := time.Now()
 	for i := 0; i <= config.OriginKeys; i++ {
 		key := uuid.NewString() // 生成key,uuid类型
 		Write(key, "")          // 向leveldb中插入key,value("")
 		// kmap[key] = len(karr)
 		karr = append(karr, key)
 	}
-	take := time.Since(t0)
-	fmt.Println("take:", take) // 统计初始化插入key,value的时间
+	if !config.ConflictMode { // 局部冲突
+		// 每个splice公用conflictLength长度(l * r)的区间剩下的l * (1 -r)，一共 l * (1 - r) * n + l = len
+		spliceLength = int(float64(len(karr)) / ((1-config.InstanceConflictRate)*float64(config.PeerNumber) + 1))
+		conflictLength = int(float64(spliceLength) * config.InstanceConflictRate)
+	} else { // 全局冲突
+		spliceLength = len(karr)
+		conflictLength = len(karr)
+	}
 }
 
 // Read 从leveldb中读
@@ -79,7 +84,7 @@ type Tx struct {
 }
 
 // 根据热点率获取随机的key todo
-func getRandomKeyWithHot() string {
+func getRandomKeyWithHot(peerId int) string {
 	//r := rand.Float64()
 	//n := int(float64(len(karr)) * config.HotKey)
 	//idx := 0
@@ -89,24 +94,27 @@ func getRandomKeyWithHot() string {
 	//	idx = rand.Intn(len(karr)-n) + n
 	//}
 	//fmt.Println(111)
-	idx := getNormalRandom()
+	idx := getNormalRandom(peerId)
+	if idx < conflictLength {
+		return karr[idx]
+	}
 	//fmt.Println(idx)
-	return karr[idx]
+	return karr[idx+peerId*spliceLength]
 }
 
 // todo
-func getNormalRandom() int {
-	u := len(karr) / 2
+func getNormalRandom(peerId int) int {
+	u := spliceLength / 2
 	for {
 		x := int(rand.NormFloat64()*config.StdDiff) + u
-		if x >= 0 && x < len(karr) {
+		if x >= 0 && x < spliceLength {
 			return x
 		}
 	}
 }
 
 // GenTxSet 生成交易
-func GenTxSet() []*Tx {
+func GenTxSet(peerId int) []*Tx {
 	n := config.BatchTxNum
 	m := config.OpsPerTx
 	valFormat := "%0" + strconv.Itoa(config.ValueSize) + "%s" // todo
@@ -119,12 +127,12 @@ func GenTxSet() []*Tx {
 			if r < wrate {
 				// 生成一笔写操作
 				ops[j].Type = OpWrite
-				ops[j].Key = getRandomKeyWithHot()
+				ops[j].Key = getRandomKeyWithHot(peerId)
 				ops[j].Val = fmt.Sprintf(valFormat, uuid.NewString()) // todo
 			} else {
 				// 生成一笔读操作
 				ops[j].Type = OpRead
-				ops[j].Key = getRandomKeyWithHot()
+				ops[j].Key = getRandomKeyWithHot(peerId)
 			}
 		}
 		txs[i] = &Tx{Ops: ops, abort: false, sequence: -1}

@@ -116,128 +116,162 @@ func (peer *Peer) string() string {
 func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	hashtable := make(map[string]StateSet)
 	record := peer.record[id]
-	for i := 0; i < bias; i++ {
-		tmpTx := record.blocks[i+record.index].txs
-		for txIndex, tx := range tmpTx {
-			if tx.abort {
-				continue
+	tmpTx := record.blocks[bias+record.index].txs
+	for txIndex, tx := range tmpTx {
+		if tx.abort {
+			continue
+		}
+		for _, op := range tx.Ops {
+			_, ok := hashtable[op.Key]
+			if !ok {
+				hashtable[op.Key] = *newStateSet()
 			}
-			for _, op := range tx.Ops {
-				_, ok := hashtable[op.Key]
-				if !ok {
-					hashtable[op.Key] = *newStateSet()
-				}
-				txHash := strconv.Itoa(rand.Intn(config.PeerNumber)) + "_" + strconv.Itoa(rand.Intn(10)) + "_" + strconv.Itoa(txIndex)
-				unit := newUnit(op, tx, txHash)
-				stateSet := hashtable[op.Key]
-				//fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
-				if unit.op.Type == OpRead {
-					stateSet.appendToReadSet(*unit)
-				} else {
-					stateSet.appendToWriteSet(*unit)
-				}
-				hashtable[op.Key] = stateSet
+			txHash := strconv.Itoa(rand.Intn(config.PeerNumber)) + "_" + strconv.Itoa(rand.Intn(10)) + "_" + strconv.Itoa(txIndex)
+			unit := newUnit(op, tx, txHash)
+			stateSet := hashtable[op.Key]
+			//fmt.Println(len(stateSet.ReadSet), len(stateSet.WriteSet))
+			if unit.op.Type == OpRead {
+				stateSet.appendToReadSet(*unit)
+			} else {
+				stateSet.appendToWriteSet(*unit)
 			}
+			hashtable[op.Key] = stateSet
 		}
 	}
 	return hashtable
 }
-
-func (peer *Peer) execParallelingImpl(epoch map[int]int) {
-	//keyTable := make([]string, 0)
-	//for key, _ := range hashtable {
-	//	keyTable = append(keyTable, key)
-	//}
-	//var index = 0
-	//var jump = 4
-	var wg sync.WaitGroup
-	wg.Add(config.PeerNumber)
-	//channel := make(chan int, config.PeerNumber)
-	for id, bias := range epoch {
-		tmpId := id
-		tmpBias := bias
-		hashtable := peer.getHashTable(id, bias)
-		TransactionSort(hashtable)
-		go func(id int, bias int, wg *sync.WaitGroup) {
-			defer wg.Done()
-			record := peer.record[id]
-			allBlock := record.blocks[record.index : record.index+bias]
-			orderedTxs := getAllOrderTxs(allBlock)
-			for _, each := range orderedTxs {
-				var wg2 sync.WaitGroup
-				wg2.Add(len(each.txs))
-				for _, tx := range each.txs {
-					tmpTx := tx
-					go func(tmpTx Tx, wg2 *sync.WaitGroup) {
-						defer wg2.Done()
-						for _, op := range tmpTx.Ops {
-							if op.Type == OpRead {
-								Read(op.Key)
-							} else {
-								Write(op.Key, op.Val)
-							}
-						}
-					}(tmpTx, &wg2)
-				}
-				wg2.Wait()
+func (peer *Peer) exec(epoch map[int]int) {
+	peer.mu.Lock()
+	//fmt.Println("exec start...")
+	if len(epoch) != 0 {
+		instances := make([]Instance, 0)
+		for id, bias := range epoch {
+			instance := newInstance(id)
+			for i := 0; i < bias; i++ {
+				hashtable := peer.getHashTable(id, i)
+				//fmt.Println("transaction sort start...")
+				TransactionSort(hashtable)
+				instance.addHashTable(hashtable)
 			}
-		}(tmpId, tmpBias, &wg)
-		//go func(id int, bias int, wg *sync.WaitGroup) {
-		//	defer wg.Done()
-		//	//txNumber := 0
-		//	record := peer.record[id]
-		//	for i := 0; i < bias; i++ {
-		//		txs := record.blocks[i+record.index].txs
-		//		for _, tx := range txs {
-		//			if !tx.abort {
-		//				//fmt.Println(tx.sequence)
-		//				//txNumber += 1
-		//				for _, op := range tx.Ops {
-		//					if op.Type == OpRead {
-		//						Read(op.Key)
-		//					} else {
-		//						Write(op.Key, op.Val)
-		//					}
-		//				}
-		//			}
-		//		}
-		//	}
-		//	//channel <- txNumber
-		//}(tmpId, tmpBias, &wg)
+			instances = append(instances, *instance)
+		}
+		peer.execImpl(instances)
+		for _, id := range peer.peersIds {
+			record4id := peer.record[id]
+			record4id.index += epoch[id]
+			peer.record[id] = record4id
+		}
 	}
-	wg.Wait()
-	//total := 0
-	//for i := 0; i < config.PeerNumber; i++ {
-	//	total += <-channel
-	//}
-	//close(channel)
-	//return total
-	//for {
-	//	var wg sync.WaitGroup
-	//	wg.Add(jump)
-	//	for i := 0; i < jump; i++ {
-	//		tmp := i
-	//		go func(i int, wg *sync.WaitGroup) {
-	//			defer wg.Done()
-	//			if index+i >= len(keyTable) {
-	//				return
-	//			}
-	//			for _, unit := range hashtable[keyTable[index+i]].ReadSet {
-	//				op := unit.op
-	//				Read(op.Key)
-	//			}
-	//			for _, unit := range hashtable[keyTable[index+i]].WriteSet {
-	//				op := unit.op
-	//				Write(op.Key, op.Val)
-	//			}
-	//		}(tmp, &wg)
-	//	}
-	//	wg.Wait()
-	//	index += jump
-	//	if index >= len(keyTable) {
-	//		break
-	//	}
-	//}
+	peer.mu.Unlock()
+
+}
+
+// 每个Instance的hashtable(多个子块串联r-w-r-w)
+// 计算每个Instance在每个Address上的读集的级联度，并联合所有的Instance
+// 结构：
+// map[address] -> OrderInstance{variance, instances, ...}
+// 根据上述map, 计算每个map的方差， 按序构建Graph
+func (peer *Peer) execImpl(instances []Instance) {
+	var wg4computeCascade sync.WaitGroup
+	wg4computeCascade.Add(len(instances))
+	// 并行计算所有Instance级联度
+	//fmt.Println("cascade compute start...")
+	for _, instance := range instances {
+		tmpInstance := instance
+		go func(instance Instance, wg4computeCascade *sync.WaitGroup) {
+			defer wg4computeCascade.Done()
+			instance.computeCascade() // 计算每个instance的级联度
+		}(tmpInstance, &wg4computeCascade)
+	}
+	wg4computeCascade.Wait()
+	// 获取所有address所对应的Instances,用于排序
+	OrderInstanceMap := make(map[string]OrderInstance, 0)
+	instanceDict := make(map[int]int, 0) // 对应有向图坐标
+	tmpIndex := 0
+	for _, instance := range instances {
+		instanceDict[instance.peerId] = tmpIndex
+		tmpIndex++
+		for address, _ := range instance.cascade {
+			_, ok := OrderInstanceMap[address]
+			if !ok {
+				OrderInstanceMap[address] = *newOrderInstance(address)
+			}
+			tmpOrderInstance := OrderInstanceMap[address]
+			tmpOrderInstance.appendInstance(instance)
+			OrderInstanceMap[address] = tmpOrderInstance
+		}
+	}
+	DAG := make([][]int, tmpIndex) // 有向图邻接矩阵
+	for i := range DAG {
+		DAG[i] = make([]int, tmpIndex)
+		for j := range DAG[i] {
+			DAG[i][j] = 0
+		}
+	}
+	// 计算方差并对address进行排序
+	List4AddressOrder := make([]string, 0)
+	for address, orderInstance := range OrderInstanceMap {
+		orderInstance.computeVariance()
+		List4AddressOrder = append(List4AddressOrder, address)
+	}
+	// 冒泡排序, List4Address里的顺序就是最后Address的顺序
+	AddressSortFlag := true
+	for i := 0; i < len(List4AddressOrder)-1; i++ {
+		AddressSortFlag = true
+		// 方差倒排，在方差一样的基础上看谁的instance多
+		for j := 0; j < len(List4AddressOrder)-i-1; j++ {
+			if OrderInstanceMap[List4AddressOrder[j]].variance < OrderInstanceMap[List4AddressOrder[j+1]].variance {
+				List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
+				AddressSortFlag = false
+			} else if OrderInstanceMap[List4AddressOrder[j]].variance == OrderInstanceMap[List4AddressOrder[j+1]].variance {
+				if len(OrderInstanceMap[List4AddressOrder[j]].instances) < len(OrderInstanceMap[List4AddressOrder[i]].instances) {
+					List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
+					AddressSortFlag = false
+				}
+			}
+		}
+		if AddressSortFlag {
+			break
+		}
+	}
+	// 根据排好序的address，得到其对应的instances的顺序，放入有向图中
+	for _, address := range List4AddressOrder {
+		tmpOrderInstance := OrderInstanceMap[address]
+		result := tmpOrderInstance.getOrder()
+		// 按序检测该结果是否与之前有冲突，如果有，将该元素删除
+		validResult := make([]int, 0)
+		for i, element := range result {
+			valid := true
+			for j := i + 1; j < len(result); j++ {
+				// 如果与之前的顺序冲突
+				if DAG[instanceDict[result[j]]][instanceDict[result[i]]] == 1 {
+					valid = false
+					break
+				}
+			}
+			if valid {
+				validResult = append(validResult, instanceDict[element])
+			}
+		}
+		// 将新加入的顺序更新到DAG中
+		for i := 0; i < len(validResult)-1; i++ {
+			DAG[validResult[i]][validResult[i+1]] = 1
+		}
+	}
+	//var execWg sync.WaitGroup
+	//execWg.Add(len(OrderInstanceMap))
+	topologicalOrder := TopologicalOrder(DAG)
+	for _, orderInstance := range OrderInstanceMap {
+		tmpInstance := orderInstance
+		//fmt.Println("start go func....")
+		//go func(tmpInstance OrderInstance, execWg *sync.WaitGroup) {
+		//	defer execWg.Done()
+		tmpInstance.OrderByDAG(topologicalOrder, instanceDict)
+		tmpInstance.execLastWrite()
+		//fmt.Println("execLastWrite success...")
+		//}(tmpInstance, &execWg)
+	}
+	//execWg.Wait()
 }
 func (peer *Peer) addExecNumber(extra int) {
 	tmp := peer.execNumber
@@ -245,33 +279,6 @@ func (peer *Peer) addExecNumber(extra int) {
 	peer.execNumber = tmp
 }
 
-func (peer *Peer) execParalleling(epoch map[int]int) {
-	peer.mu.Lock()
-	hashTables := make([]map[string]StateSet, 0)
-	for id, bias := range epoch {
-		if bias == 0 {
-			continue
-		}
-		hashTables = append(hashTables, peer.getHashTable(id, bias))
-	}
-	if len(hashTables) != 0 {
-		solution := newSolution(hashTables)
-		solution.getResult()
-		// 执行交易
-		peer.execParallelingImpl(epoch)
-		//peer.addExecNumber(getOpsNumber(result))
-		//peer.log("exec txs:" + strconv.Itoa(total))
-		for _, id := range peer.peersIds {
-			record4id := peer.record[id]
-			record4id.index += epoch[id]
-			peer.record[id] = record4id
-		}
-		//peer.execNumber.number += total
-		//peer.NotExecBlockIndex += epoch[peer.id]
-	}
-	peer.mu.Unlock()
-
-}
 func (peer *Peer) RecordLog() string {
 	result := ""
 	for id, _ := range peer.record {
@@ -335,24 +342,12 @@ func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut() {
-	var tx = GenTxSet()
-	//var tx = make([]*Tx, 0)
+	var tx = GenTxSet(peer.id)
+	peer.log("generate tx:" + strconv.Itoa(len(tx)))
 	newBlock := NewBlock(tx)
-	//peer.mu.Lock()
-	//peer.blocks = append(peer.blocks, *newBlock)
 	for _, eachPeer := range peerMap {
-		//if eachPeer.id == peer.id {
-		//	continue
-		//}
 		eachPeer.AppendBlockToRecord(peer.id, *newBlock)
 	}
-	//for _, id := range peer.peersIds {
-	//	if id == peer.id {
-	//		continue
-	//	}
-	//	peerList.peers[id].AppendBlockToRecord(peer.id, *newBlock)
-	//}
-	//peer.mu.Unlock()
 	peer.log(peer.string())
 
 }
@@ -369,7 +364,7 @@ const (
 )
 
 // 启动节点
-func (peer *Peer) runParalleling() {
+func (peer *Peer) run() {
 	for {
 		if peer.state == Dead {
 			break
@@ -384,6 +379,9 @@ func (peer *Peer) runParalleling() {
 				time.Sleep(time.Duration(100) * time.Millisecond) // 得到实时树高耗时
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
+					if height == 0 {
+						continue
+					}
 					heightMap[id] = height
 					total += height
 				}
@@ -401,7 +399,7 @@ func (peer *Peer) runParalleling() {
 					tmp := eachPeer
 					go func(tmp *Peer, wg *sync.WaitGroup) {
 						defer wg.Done()
-						tmp.execParalleling(heightMap)
+						tmp.exec(heightMap)
 					}(tmp, &wg)
 					//eachPeer.exec(heightMap)
 				}
@@ -423,52 +421,7 @@ func (peer *Peer) checkComplete() bool {
 	peer.mu.Unlock()
 	return flag
 }
-func (peer *Peer) execWaitingImpl(blocks []Block) {
-	for _, block := range blocks {
-		for _, tx := range block.txs {
-			for _, op := range tx.Ops {
-				if op.Type == OpRead {
-					Read(op.Key)
-				}
-				if op.Type == OpWrite {
-					Write(op.Key, op.Val)
-				}
-			}
-		}
-	}
-}
-func (peer *Peer) execWaiting() {
-	peer.mu.Lock()
-	blocks := make([]Block, 0)
-	for _, record := range peer.record {
-		block := record.blocks[record.index]
-		blocks = append(blocks, block)
-	}
-	// 执行交易
-	peer.execWaitingImpl(blocks)
-	peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
-	for _, id := range peer.peersIds {
-		record4id := peer.record[id]
-		record4id.index += 1
-		peer.record[id] = record4id
-	}
-	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
-	//peer.NotExecBlockIndex += epoch[peer.id]
-	peer.mu.Unlock()
-}
-func (peer *Peer) runWaiting() {
-	for {
-		if peer.state == Dead {
-			break
-		}
-		if peer.checkComplete() {
-			peer.log(peer.RecordLog())
-			//fmt.Println(peer.RecordLog())
-			peer.execWaiting()
-		}
-	}
-}
-func (peer *Peer) start(params execType) {
+func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log(peer.string())
@@ -484,11 +437,7 @@ func (peer *Peer) start(params execType) {
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
 	}(peer)
-	if params == Paralleling {
-		peer.runParalleling()
-	} else if params == Waiting {
-		peer.runWaiting()
-	}
+	peer.run()
 
 }
 
