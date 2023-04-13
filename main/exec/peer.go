@@ -175,14 +175,14 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 	var wg sync.WaitGroup
 	wg.Add(len(ExecBlocks))
 	buffer := make(map[string]int, 0)
-	for _, address := range smallbank.savings {
-		tmpResult, _ := strconv.Atoi(smallbank.Read(address))
-		buffer[address] = tmpResult
-	}
-	for _, address := range smallbank.checkings {
-		tmpResult, _ := strconv.Atoi(smallbank.Read(address))
-		buffer[address] = tmpResult
-	}
+	//for _, address := range smallbank.savings {
+	//	tmpResult, _ := strconv.Atoi(smallbank.Read(address))
+	//	buffer[address] = tmpResult
+	//}
+	//for _, address := range smallbank.checkings {
+	//	tmpResult, _ := strconv.Atoi(smallbank.Read(address))
+	//	buffer[address] = tmpResult
+	//}
 	for _, blocks := range ExecBlocks {
 		tmpBlocks := blocks
 		tmpBuffer := buffer
