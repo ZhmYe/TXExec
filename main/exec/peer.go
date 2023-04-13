@@ -204,14 +204,14 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							readResult, _ := buffer[readOp.Key]
 							WriteResult := readResult + writeValue
 							tx.Ops[1].Val = strconv.Itoa(WriteResult)
-							buffer[readOp.Key] = WriteResult
+							tmpBuffer[readOp.Key] = WriteResult
 						case depositChecking:
 							readOp := tx.Ops[0]
 							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 							readResult, _ := buffer[readOp.Key]
 							WriteResult := readResult + writeValue
 							tx.Ops[1].Val = strconv.Itoa(WriteResult)
-							buffer[readOp.Key] = WriteResult
+							tmpBuffer[readOp.Key] = WriteResult
 						case sendPayment:
 							readOpA := tx.Ops[0]
 							readOpB := tx.Ops[1]
@@ -222,16 +222,16 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							WriteResultA := readResultA + writeValueA
 							WriteResultB := readResultB + writeValueB
 							tx.Ops[2].Val = strconv.Itoa(WriteResultA)
-							buffer[readOpA.Key] = writeValueA
+							tmpBuffer[readOpA.Key] = writeValueA
 							tx.Ops[3].Val = strconv.Itoa(WriteResultB)
-							buffer[readOpB.Key] = writeValueB
+							tmpBuffer[readOpB.Key] = writeValueB
 						case writeCheck:
 							readOp := tx.Ops[0]
 							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 							readResult, _ := buffer[readOp.Key]
 							WriteResult := readResult + writeValue
 							tx.Ops[1].Val = strconv.Itoa(WriteResult)
-							buffer[readOp.Key] = WriteResult
+							tmpBuffer[readOp.Key] = WriteResult
 						case amalgamate:
 							readOpSaving := tx.Ops[0]
 							readOpChecking := tx.Ops[1]
@@ -239,10 +239,10 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							readResultChecking, _ := buffer[readOpChecking.Key]
 							writeResultSaving := 0
 							tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
-							buffer[readOpSaving.Key] = 0
+							tmpBuffer[readOpSaving.Key] = 0
 							writeResultChecking := readResultSaving + readResultChecking
 							tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
-							buffer[readOpChecking.Key] = writeResultChecking
+							tmpBuffer[readOpChecking.Key] = writeResultChecking
 						}
 					}(tmpTx, &wg4tx, buffer4Tx)
 				}
