@@ -322,6 +322,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 			}
 		}(tmpBlocks, &wg)
 	}
+	fmt.Println("waiting")
 	wg.Wait()
 }
 
