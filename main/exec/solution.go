@@ -281,6 +281,6 @@ func (orderInstance *OrderInstance) execLastWrite() {
 		}
 	}
 	if checkFlag {
-		Write(lastWrite.op.Key, lastWrite.op.Val)
+		smallbank.Write(lastWrite.op.Key, lastWrite.op.Val)
 	}
 }
