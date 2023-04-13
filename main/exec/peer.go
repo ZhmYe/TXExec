@@ -197,53 +197,53 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					buffer4Tx := tmpBuffer
 					go func(tx *Tx, wg4tx *sync.WaitGroup, buffer map[string]int) {
 						defer wg4tx.Done()
-						switch tx.txType {
-						case transactSavings:
-							readOp := tx.Ops[0]
-							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-							readResult, _ := buffer[readOp.Key]
-							WriteResult := readResult + writeValue
-							tx.Ops[1].Val = strconv.Itoa(WriteResult)
-							tmpBuffer[readOp.Key] = WriteResult
-						case depositChecking:
-							readOp := tx.Ops[0]
-							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-							readResult, _ := buffer[readOp.Key]
-							WriteResult := readResult + writeValue
-							tx.Ops[1].Val = strconv.Itoa(WriteResult)
-							tmpBuffer[readOp.Key] = WriteResult
-						case sendPayment:
-							readOpA := tx.Ops[0]
-							readOpB := tx.Ops[1]
-							writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
-							writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
-							readResultA, _ := buffer[readOpA.Key]
-							readResultB, _ := buffer[readOpB.Key]
-							WriteResultA := readResultA + writeValueA
-							WriteResultB := readResultB + writeValueB
-							tx.Ops[2].Val = strconv.Itoa(WriteResultA)
-							tmpBuffer[readOpA.Key] = writeValueA
-							tx.Ops[3].Val = strconv.Itoa(WriteResultB)
-							tmpBuffer[readOpB.Key] = writeValueB
-						case writeCheck:
-							readOp := tx.Ops[0]
-							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-							readResult, _ := buffer[readOp.Key]
-							WriteResult := readResult + writeValue
-							tx.Ops[1].Val = strconv.Itoa(WriteResult)
-							tmpBuffer[readOp.Key] = WriteResult
-						case amalgamate:
-							readOpSaving := tx.Ops[0]
-							readOpChecking := tx.Ops[1]
-							readResultSaving, _ := buffer[readOpSaving.Key]
-							readResultChecking, _ := buffer[readOpChecking.Key]
-							writeResultSaving := 0
-							tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
-							tmpBuffer[readOpSaving.Key] = 0
-							writeResultChecking := readResultSaving + readResultChecking
-							tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
-							tmpBuffer[readOpChecking.Key] = writeResultChecking
-						}
+						//switch tx.txType {
+						//case transactSavings:
+						//	readOp := tx.Ops[0]
+						//	writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						//	readResult, _ := buffer[readOp.Key]
+						//	WriteResult := readResult + writeValue
+						//	tx.Ops[1].Val = strconv.Itoa(WriteResult)
+						//	tmpBuffer[readOp.Key] = WriteResult
+						//case depositChecking:
+						//	readOp := tx.Ops[0]
+						//	writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						//	readResult, _ := buffer[readOp.Key]
+						//	WriteResult := readResult + writeValue
+						//	tx.Ops[1].Val = strconv.Itoa(WriteResult)
+						//	tmpBuffer[readOp.Key] = WriteResult
+						//case sendPayment:
+						//	readOpA := tx.Ops[0]
+						//	readOpB := tx.Ops[1]
+						//	writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+						//	writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+						//	readResultA, _ := buffer[readOpA.Key]
+						//	readResultB, _ := buffer[readOpB.Key]
+						//	WriteResultA := readResultA + writeValueA
+						//	WriteResultB := readResultB + writeValueB
+						//	tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+						//	tmpBuffer[readOpA.Key] = writeValueA
+						//	tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+						//	tmpBuffer[readOpB.Key] = writeValueB
+						//case writeCheck:
+						//	readOp := tx.Ops[0]
+						//	writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						//	readResult, _ := buffer[readOp.Key]
+						//	WriteResult := readResult + writeValue
+						//	tx.Ops[1].Val = strconv.Itoa(WriteResult)
+						//	tmpBuffer[readOp.Key] = WriteResult
+						//case amalgamate:
+						//	readOpSaving := tx.Ops[0]
+						//	readOpChecking := tx.Ops[1]
+						//	readResultSaving, _ := buffer[readOpSaving.Key]
+						//	readResultChecking, _ := buffer[readOpChecking.Key]
+						//	writeResultSaving := 0
+						//	tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
+						//	tmpBuffer[readOpSaving.Key] = 0
+						//	writeResultChecking := readResultSaving + readResultChecking
+						//	tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+						//	tmpBuffer[readOpChecking.Key] = writeResultChecking
+						//}
 					}(tmpTx, &wg4tx, buffer4Tx)
 				}
 				wg4tx.Wait()
