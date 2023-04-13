@@ -178,6 +178,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 		tmpBlocks := blocks
 		go func(blocks []Block, wg *sync.WaitGroup) {
 			defer wg.Done()
+			fmt.Println(len(blocks))
 			for i := 0; i < len(blocks); i++ {
 				buffer := make(map[string]int, 0)
 				var wg4tx sync.WaitGroup
