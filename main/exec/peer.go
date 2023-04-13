@@ -179,7 +179,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 		go func(blocks []Block, wg *sync.WaitGroup) {
 			defer wg.Done()
 			for i := 0; i < len(blocks); i++ {
-				buffer := make(map[string]int, 0)
+				//buffer := make(map[string]int, 0)
 				var wg4tx sync.WaitGroup
 				wg4tx.Add(len(blocks[i].txs))
 				for _, transaction := range blocks[i].txs {
