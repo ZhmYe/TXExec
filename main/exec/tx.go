@@ -35,22 +35,6 @@ func Init() {
 	fmt.Println("Init Smallbank Finished")
 }
 
-// Read 从leveldb中读
-func Read(key string) string {
-	val, _ := db.Get([]byte(key), nil)
-	return string(val)
-}
-
-// Write 向leveldb中写
-func Write(key, val string) {
-	db.Put([]byte(key), []byte(val), nil)
-}
-
-// Update 更新leveldb的数据
-func Update(key, val string) {
-	db.Put([]byte(key), []byte(val), nil)
-}
-
 // OpType 操作类型
 type OpType int
 

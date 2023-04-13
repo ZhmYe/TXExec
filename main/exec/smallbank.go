@@ -189,6 +189,21 @@ func RandomRange(l, r int) int {
 	return rand.Intn(r-l) + l
 }
 
+// Read 从leveldb中读
+func (s *Smallbank) Read(key string) string {
+	val, _ := s.db.Get([]byte(key), nil)
+	return string(val)
+}
+
+// Write 向leveldb中写
+func (s *Smallbank) Write(key, val string) {
+	s.db.Put([]byte(key), []byte(val), nil)
+}
+
+// Update 更新leveldb的数据
+func (s *Smallbank) Update(key, val string) {
+	s.db.Put([]byte(key), []byte(val), nil)
+}
 func NewSmallbank(path string, n int) *Smallbank {
 	// 为特定数量的用户创建一个支票账户和一个储蓄账户，第i个用户的储蓄金地址为savings[i],支票地址为checkings[i]
 	s := &Smallbank{
