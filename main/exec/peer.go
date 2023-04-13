@@ -145,7 +145,10 @@ func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println("exec start...")
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
+		execBlocks := make(map[int][]Block, 0)
 		for id, bias := range epoch {
+			record := peer.record[id]
+			execBlocks[id] = record.blocks[record.index : record.index+bias]
 			instance := newInstance(id)
 			for i := 0; i < bias; i++ {
 				hashtable := peer.getHashTable(id, i)
@@ -155,7 +158,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 			}
 			instances = append(instances, *instance)
 		}
-		peer.execImpl(instances)
+		peer.execInParalleling(execBlocks)
+		peer.OperationAfterExecution(instances)
 		for _, id := range peer.peersIds {
 			record4id := peer.record[id]
 			record4id.index += epoch[id]
@@ -166,12 +170,167 @@ func (peer *Peer) exec(epoch map[int]int) {
 
 }
 
-// 每个Instance的hashtable(多个子块串联r-w-r-w)
+// execInParalleling 并行执行不同Instance中的区块
+func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
+	var wg sync.WaitGroup
+	wg.Add(len(ExecBlocks))
+	for _, blocks := range ExecBlocks {
+		tmpBlocks := blocks
+		go func(blocks []Block, wg *sync.WaitGroup) {
+			defer wg.Done()
+			for i := 0; i < len(blocks); i++ {
+				buffer := make(map[string]int, 0)
+				var wg4tx sync.WaitGroup
+				wg4tx.Add(len(blocks[i].txs))
+				for _, transaction := range blocks[i].txs {
+					tmpTx := transaction
+					go func(tx *Tx, wg4tx *sync.WaitGroup) {
+						defer wg4tx.Done()
+						switch tx.txType {
+						case transactSavings:
+							readOp := tx.Ops[0]
+							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+							// 第一个块读取数据库内容
+							if i == 0 {
+								readResult, _ := strconv.Atoi(Read(readOp.Key))
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+								buffer[readOp.Key] = WriteResult
+							} else {
+								// 后续块读取前一个块的结果，如果没有buffer读取数据库
+								readResult, exist := buffer[readOp.Key]
+								if !exist {
+									readResult, _ = strconv.Atoi(Read(readOp.Key))
+								}
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult)
+								buffer[readOp.Key] = WriteResult
+							}
+						case depositChecking:
+							readOp := tx.Ops[0]
+							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+							if i == 0 {
+								readResult, _ := strconv.Atoi(Read(readOp.Key))
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+								buffer[readOp.Key] = WriteResult
+							} else {
+								readResult, exist := buffer[readOp.Key]
+								if !exist {
+									readResult, _ = strconv.Atoi(Read(readOp.Key))
+								}
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult)
+								buffer[readOp.Key] = WriteResult
+							}
+						case sendPayment:
+							readOpA := tx.Ops[0]
+							readOpB := tx.Ops[1]
+							writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+							writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+							if i == 0 {
+								readResultA, _ := strconv.Atoi(Read(readOpA.Key))
+								readResultB, _ := strconv.Atoi(Read(readOpB.Key))
+								WriteResultA := readResultA + writeValueA
+								WriteResultB := readResultB + writeValueB
+								tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+								buffer[readOpA.Key] = writeValueA
+								tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+								buffer[readOpB.Key] = writeValueB
+							} else {
+								readResultA, exist := buffer[readOpA.Key]
+								if !exist {
+									readResultA, _ = strconv.Atoi(Read(readOpA.Key))
+								}
+								readResultB, exist := buffer[readOpB.Key]
+								if !exist {
+									readResultB, _ = strconv.Atoi(Read(readOpB.Key))
+								}
+								WriteResultA := readResultA + writeValueA
+								WriteResultB := readResultB + writeValueB
+								tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+								buffer[readOpA.Key] = writeValueA
+								tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+								buffer[readOpB.Key] = writeValueB
+							}
+						case writeCheck:
+							readOp := tx.Ops[0]
+							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+							if i == 0 {
+								readResult, _ := strconv.Atoi(Read(readOp.Key))
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+								buffer[readOp.Key] = WriteResult
+							} else {
+								readResult, exist := buffer[readOp.Key]
+								if !exist {
+									readResult, _ = strconv.Atoi(Read(readOp.Key))
+								}
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult)
+								buffer[readOp.Key] = WriteResult
+							}
+						case query:
+							readOpSaving := tx.Ops[0]
+							readOpChecking := tx.Ops[1]
+							if i == 0 {
+								Read(readOpSaving.Key)
+								Read(readOpChecking.Key)
+							} else {
+								_, exist := buffer[readOpSaving.Key]
+								if !exist {
+									Read(readOpSaving.Key)
+								}
+								_, exist = buffer[readOpChecking.Key]
+								if !exist {
+									Read(readOpChecking.Key)
+								}
+							}
+						case amalgamate:
+							readOpSaving := tx.Ops[0]
+							readOpChecking := tx.Ops[1]
+							if i == 0 {
+								readResultSaving, _ := strconv.Atoi(Read(readOpSaving.Key))
+								WriteResultSaving := 0
+								tx.Ops[2].Val = strconv.Itoa(WriteResultSaving)
+								buffer[readOpSaving.Key] = 0
+								readResultChecking, _ := strconv.Atoi(Read(readOpChecking.Key))
+								writeResultChecking := readResultSaving + readResultChecking
+								tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+								buffer[readOpChecking.Key] = writeResultChecking
+							} else {
+								readResultSaving, exist := buffer[readOpSaving.Key]
+								if !exist {
+									readResultSaving, _ = strconv.Atoi(Read(readOpSaving.Key))
+								}
+								readResultChecking, exist := buffer[readOpChecking.Key]
+								if !exist {
+									readResultChecking, _ = strconv.Atoi(Read(readOpChecking.Key))
+								}
+								writeResultSaving := 0
+								tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
+								buffer[readOpSaving.Key] = 0
+								writeResultChecking := readResultSaving + readResultChecking
+								tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+								buffer[readOpChecking.Key] = writeResultChecking
+
+							}
+						}
+					}(tmpTx, &wg4tx)
+				}
+				wg4tx.Wait()
+			}
+		}(tmpBlocks, &wg)
+	}
+	wg.Wait()
+}
+
+// OperationAfterExecution 每个Instance的hashtable(多个子块串联r-w-r-w)
 // 计算每个Instance在每个Address上的读集的级联度，并联合所有的Instance
 // 结构：
 // map[address] -> OrderInstance{variance, instances, ...}
 // 根据上述map, 计算每个map的方差， 按序构建Graph
-func (peer *Peer) execImpl(instances []Instance) {
+func (peer *Peer) OperationAfterExecution(instances []Instance) {
 	var wg4computeCascade sync.WaitGroup
 	wg4computeCascade.Add(len(instances))
 	// 并行计算所有Instance级联度
@@ -342,7 +501,7 @@ func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut() {
-	var tx = GenTxSet(peer.id)
+	var tx = smallbank.GenTxSet(config.BatchTxNum)
 	peer.log("generate tx:" + strconv.Itoa(len(tx)))
 	newBlock := NewBlock(tx)
 	for _, eachPeer := range peerMap {

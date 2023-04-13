@@ -1,12 +1,10 @@
-package smallbank
+package exec
 
 import (
-	"math/rand"
-	"strconv"
-	"zbenchmark/ycsb"
-
 	"github.com/google/uuid"
 	"github.com/syndtr/goleveldb/leveldb"
+	"math/rand"
+	"strconv"
 )
 
 type Smallbank struct {
@@ -15,130 +13,138 @@ type Smallbank struct {
 	db        *leveldb.DB
 }
 
-func (s *Smallbank) TransactSavings(account string, amount int) *ycsb.Tx {
-	r := ycsb.Op{
-		Type: ycsb.OpRead,
+// TransactSavings 向储蓄账户增加一定余额
+func (s *Smallbank) TransactSavings(account string, amount int) *Tx {
+	r := Op{
+		Type: OpRead,
 		Key:  account,
 	}
-	w := ycsb.Op{
-		Type: ycsb.OpWrite,
-		Key:  account,
-		Val:  strconv.Itoa(amount),
-	}
-	return &ycsb.Tx{
-		Ops: []ycsb.Op{r, w},
-	}
-}
-
-func (s *Smallbank) DepositChecking(account string, amount int) *ycsb.Tx {
-	r := ycsb.Op{
-		Type: ycsb.OpRead,
-		Key:  account,
-	}
-	w := ycsb.Op{
-		Type: ycsb.OpWrite,
+	w := Op{
+		Type: OpWrite,
 		Key:  account,
 		Val:  strconv.Itoa(amount),
 	}
-	return &ycsb.Tx{
-		Ops: []ycsb.Op{r, w},
+	return &Tx{
+		Ops:      []Op{r, w},
+		abort:    false,
+		sequence: -1,
 	}
 }
 
-func (s *Smallbank) SendPayment(accountA string, accountB string, amount int) *ycsb.Tx {
-	ra := ycsb.Op{
-		Type: ycsb.OpRead,
+// DepositChecking 向支票账户增加一定余额
+func (s *Smallbank) DepositChecking(account string, amount int) *Tx {
+	r := Op{
+		Type: OpRead,
+		Key:  account,
+	}
+	w := Op{
+		Type: OpWrite,
+		Key:  account,
+		Val:  strconv.Itoa(amount),
+	}
+	return &Tx{
+		Ops: []Op{r, w},
+	}
+}
+
+// SendPayment 在两个支票账户间转账
+func (s *Smallbank) SendPayment(accountA string, accountB string, amount int) *Tx {
+	ra := Op{
+		Type: OpRead,
 		Key:  accountA,
 	}
-	rb := ycsb.Op{
-		Type: ycsb.OpRead,
+	rb := Op{
+		Type: OpRead,
 		Key:  accountB,
 	}
-	wa := ycsb.Op{
-		Type: ycsb.OpWrite,
+	wa := Op{
+		Type: OpWrite,
 		Key:  accountA,
 		Val:  strconv.Itoa(-amount),
 	}
-	wb := ycsb.Op{
-		Type: ycsb.OpWrite,
+	wb := Op{
+		Type: OpWrite,
 		Key:  accountB,
 		Val:  strconv.Itoa(amount),
 	}
-	return &ycsb.Tx{
-		Ops: []ycsb.Op{ra, rb, wa, wb},
+	return &Tx{
+		Ops: []Op{ra, rb, wa, wb},
 	}
 }
 
-func (s *Smallbank) WriteCheck(account string, amount int) *ycsb.Tx {
-	r := ycsb.Op{
-		Type: ycsb.OpRead,
+// WriteCheck 减少一个支票账户
+func (s *Smallbank) WriteCheck(account string, amount int) *Tx {
+	r := Op{
+		Type: OpRead,
 		Key:  account,
 	}
-	w := ycsb.Op{
-		Type: ycsb.OpWrite,
+	w := Op{
+		Type: OpWrite,
 		Key:  account,
 		Val:  strconv.Itoa(-amount),
 	}
-	return &ycsb.Tx{
-		Ops: []ycsb.Op{r, w},
+	return &Tx{
+		Ops: []Op{r, w},
 	}
 }
 
-func (s *Smallbank) Amalgamate(saving string, checking string) *ycsb.Tx {
-	ra := ycsb.Op{
-		Type: ycsb.OpRead,
+// Amalgamate 将储蓄账户的资金全部转到支票账户
+func (s *Smallbank) Amalgamate(saving string, checking string) *Tx {
+	ra := Op{
+		Type: OpRead,
 		Key:  saving,
 	}
-	rb := ycsb.Op{
-		Type: ycsb.OpRead,
+	rb := Op{
+		Type: OpRead,
 		Key:  checking,
 	}
-	wa := ycsb.Op{
-		Type: ycsb.OpWrite,
+	wa := Op{
+		Type: OpWrite,
 		Key:  saving,
 		Val:  strconv.Itoa(0),
 	}
-	wb := ycsb.Op{
-		Type: ycsb.OpWrite,
+	wb := Op{
+		Type: OpWrite,
 		Key:  checking,
-		Val:  strconv.Itoa(rand.Intn(10e4) + 10e4),
+		Val:  strconv.Itoa(0),
 	}
-	return &ycsb.Tx{
-		Ops: []ycsb.Op{ra, rb, wa, wb},
+	return &Tx{
+		Ops: []Op{ra, rb, wa, wb},
 	}
 }
 
-func (s *Smallbank) Query(saving string, checking string) *ycsb.Tx {
-	ra := ycsb.Op{
-		Type: ycsb.OpRead,
+// Query 查询第i个用户的saving和checking
+func (s *Smallbank) Query(saving string, checking string) *Tx {
+	ra := Op{
+		Type: OpRead,
 		Key:  saving,
 	}
-	rb := ycsb.Op{
-		Type: ycsb.OpRead,
+	rb := Op{
+		Type: OpRead,
 		Key:  checking,
 	}
-	return &ycsb.Tx{
-		Ops: []ycsb.Op{ra, rb},
+	return &Tx{
+		Ops: []Op{ra, rb},
 	}
 }
 
 func (s *Smallbank) GetRandomAmount() int {
-	return RandomRange(1e4, 1e5)
+	return RandomRange(1e3, 1e4)
 }
 
 func (s *Smallbank) GetNormalRandomIndex() int {
 	n := len(s.savings)
 	for {
-		x := int(rand.NormFloat64()*ycsb.KConfig.StdDiff) + n/2
+		x := int(rand.NormFloat64()*config.StdDiff) + n/2
 		if x >= 0 && x < n {
 			return x
 		}
 	}
 }
 
-func (s *Smallbank) GetRandomTx() *ycsb.Tx {
+func (s *Smallbank) GetRandomTx() *Tx {
 	r0 := rand.Float64()
-	if r0 > ycsb.KConfig.WRate {
+	if r0 > config.WRate {
 		i := s.GetNormalRandomIndex()
 		return s.Query(s.savings[i], s.checkings[i])
 	}
@@ -170,20 +176,21 @@ func (s *Smallbank) GetRandomTx() *ycsb.Tx {
 	panic("err")
 }
 
-func (s *Smallbank) GenTxSet(n int) []*ycsb.Tx {
-	txs := make([]*ycsb.Tx, n)
+func (s *Smallbank) GenTxSet(n int) []*Tx {
+	txs := make([]*Tx, n)
 	for i := range txs {
 		txs[i] = s.GetRandomTx()
 	}
 	return txs
 }
 
-// [l, r)
+// RandomRange [l, r)
 func RandomRange(l, r int) int {
 	return rand.Intn(r-l) + l
 }
 
 func NewSmallbank(path string, n int) *Smallbank {
+	// 为特定数量的用户创建一个支票账户和一个储蓄账户，第i个用户的储蓄金地址为savings[i],支票地址为checkings[i]
 	s := &Smallbank{
 		savings:   make([]string, n),
 		checkings: make([]string, n),
