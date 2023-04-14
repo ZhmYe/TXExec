@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -152,6 +153,7 @@ func (instance *Instance) abortReadSet(readSet []Unit) {
 			continue
 		}
 		repeatCheck[unit.txHash] = true
+		fmt.Println(111)
 		unit.tx.abort = true
 		CascadeInAddress, haveCascade := instance.record[unit.txHash]
 		if haveCascade {
