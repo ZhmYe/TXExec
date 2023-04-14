@@ -508,7 +508,7 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
-	peer.blockTimeout = time.Duration(200*peer.id+200) * time.Millisecond
+	peer.blockTimeout = time.Duration(100*peer.id+300) * time.Millisecond
 	peer.blockTimeStamp = time.Now()
 }
 
@@ -561,9 +561,9 @@ func (peer *Peer) run() {
 					heightMap[id] = height
 					total += height
 				}
-				if total > 5 {
+				if total > 10 {
 					for id, height := range heightMap {
-						tmp := int(math.Floor(float64(5) * float64(height) / float64(total)))
+						tmp := int(math.Floor(float64(10) * float64(height) / float64(total)))
 						heightMap[id] = tmp
 					}
 				}
