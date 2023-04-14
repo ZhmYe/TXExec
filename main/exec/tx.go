@@ -1,12 +1,5 @@
 package exec
 
-var (
-	//db   *leveldb.DB
-	smallbank *Smallbank
-	//karr      []string // key array,由config中的originkeys数量生成
-	// kmap map[string]int
-)
-
 // OpType 操作类型
 type OpType int
 

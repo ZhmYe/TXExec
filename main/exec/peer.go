@@ -104,7 +104,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 
 // SmallBankInit Init, leveldb初始化，插入指定数量的key,value键值对
 func (peer *Peer) SmallBankInit() {
-	peer.smallBank = NewSmallbank("levdb", config.OriginKeys)
+	peer.smallBank = NewSmallbank("leveldb"+strconv.Itoa(peer.id), config.OriginKeys)
 }
 func (peer *Peer) string() string {
 	var state string
@@ -209,7 +209,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 							// 第一个块读取数据库内容
 							if i == 0 {
-								readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+								readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 								WriteResult := readResult + writeValue
 								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
 								buffer.Store(readOp.Key, WriteResult)
@@ -219,7 +219,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 								readResult, exist := buffer.Load(readOp.Key)
 								//readResult, exist := buffer[readOp.Key]
 								if !exist {
-									readResult, _ = strconv.Atoi(smallbank.Read(readOp.Key))
+									readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
 								}
 								WriteResult := readResult.(int) + writeValue
 								tx.Ops[1].Val = strconv.Itoa(WriteResult)
@@ -230,7 +230,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							readOp := tx.Ops[0]
 							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 							if i == 0 {
-								readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+								readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 								WriteResult := readResult + writeValue
 								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
 								buffer.Store(readOp.Key, WriteResult)
@@ -238,7 +238,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							} else {
 								readResult, exist := buffer.Load(readOp.Key)
 								if !exist {
-									readResult, _ = strconv.Atoi(smallbank.Read(readOp.Key))
+									readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
 								}
 								WriteResult := readResult.(int) + writeValue
 								tx.Ops[1].Val = strconv.Itoa(WriteResult)
@@ -251,8 +251,8 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
 							writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
 							if i == 0 {
-								readResultA, _ := strconv.Atoi(smallbank.Read(readOpA.Key))
-								readResultB, _ := strconv.Atoi(smallbank.Read(readOpB.Key))
+								readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+								readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
 								WriteResultA := readResultA + writeValueA
 								WriteResultB := readResultB + writeValueB
 								tx.Ops[2].Val = strconv.Itoa(WriteResultA)
@@ -264,11 +264,11 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							} else {
 								readResultA, exist := buffer.Load(readOpA.Key)
 								if !exist {
-									readResultA, _ = strconv.Atoi(smallbank.Read(readOpA.Key))
+									readResultA, _ = strconv.Atoi(peer.smallBank.Read(readOpA.Key))
 								}
 								readResultB, exist := buffer.Load(readOpB.Key)
 								if !exist {
-									readResultB, _ = strconv.Atoi(smallbank.Read(readOpB.Key))
+									readResultB, _ = strconv.Atoi(peer.smallBank.Read(readOpB.Key))
 								}
 								WriteResultA := readResultA.(int) + writeValueA
 								WriteResultB := readResultB.(int) + writeValueB
@@ -283,7 +283,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							readOp := tx.Ops[0]
 							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 							if i == 0 {
-								readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+								readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 								WriteResult := readResult + writeValue
 								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
 								buffer.Store(readOp.Key, WriteResult)
@@ -291,7 +291,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							} else {
 								readResult, exist := buffer.Load(readOp.Key)
 								if !exist {
-									readResult, _ = strconv.Atoi(smallbank.Read(readOp.Key))
+									readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
 								}
 								WriteResult := readResult.(int) + writeValue
 								tx.Ops[1].Val = strconv.Itoa(WriteResult)
@@ -301,38 +301,38 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 							readOpSaving := tx.Ops[0]
 							readOpChecking := tx.Ops[1]
 							if i == 0 {
-								smallbank.Read(readOpSaving.Key)
-								smallbank.Read(readOpChecking.Key)
+								peer.smallBank.Read(readOpSaving.Key)
+								peer.smallBank.Read(readOpChecking.Key)
 							} else {
 								_, exist := buffer.Load(readOpSaving.Key)
 								if !exist {
-									smallbank.Read(readOpSaving.Key)
+									peer.smallBank.Read(readOpSaving.Key)
 								}
 								_, exist = buffer.Load(readOpChecking.Key)
 								if !exist {
-									smallbank.Read(readOpChecking.Key)
+									peer.smallBank.Read(readOpChecking.Key)
 								}
 							}
 						case amalgamate:
 							readOpSaving := tx.Ops[0]
 							readOpChecking := tx.Ops[1]
 							if i == 0 {
-								readResultSaving, _ := strconv.Atoi(smallbank.Read(readOpSaving.Key))
+								readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
 								WriteResultSaving := 0
 								tx.Ops[2].Val = strconv.Itoa(WriteResultSaving)
 								buffer.Store(readOpSaving.Key, 0)
-								readResultChecking, _ := strconv.Atoi(smallbank.Read(readOpChecking.Key))
+								readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
 								writeResultChecking := readResultSaving + readResultChecking
 								tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
 								buffer.Store(readOpChecking.Key, writeResultChecking)
 							} else {
 								readResultSaving, exist := buffer.Load(readOpSaving.Key)
 								if !exist {
-									readResultSaving, _ = strconv.Atoi(smallbank.Read(readOpSaving.Key))
+									readResultSaving, _ = strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
 								}
 								readResultChecking, exist := buffer.Load(readOpChecking.Key)
 								if !exist {
-									readResultChecking, _ = strconv.Atoi(smallbank.Read(readOpChecking.Key))
+									readResultChecking, _ = strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
 								}
 								writeResultSaving := 0
 								tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
@@ -528,7 +528,7 @@ func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut() {
-	var tx = smallbank.GenTxSet(config.BatchTxNum)
+	var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 	peer.log("generate tx:" + strconv.Itoa(len(tx)))
 	newBlock := NewBlock(tx)
 	for _, eachPeer := range peerMap {
@@ -607,53 +607,53 @@ func (peer *Peer) execWaitingImpl(blocks []Block) {
 			case transactSavings:
 				readOp := tx.Ops[0]
 				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-				readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 				WriteResult := readResult + writeValue
 				tx.Ops[1].Val = strconv.Itoa(WriteResult)
-				smallbank.Update(readOp.Key, strconv.Itoa(WriteResult))
+				peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 			case depositChecking:
 				readOp := tx.Ops[0]
 				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-				readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 				WriteResult := readResult + writeValue
 				tx.Ops[1].Val = strconv.Itoa(WriteResult)
-				smallbank.Update(readOp.Key, strconv.Itoa(WriteResult))
+				peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 			case sendPayment:
 				readOpA := tx.Ops[0]
 				readOpB := tx.Ops[1]
 				writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
 				writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
-				readResultA, _ := strconv.Atoi(smallbank.Read(readOpA.Key))
-				readResultB, _ := strconv.Atoi(smallbank.Read(readOpB.Key))
+				readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+				readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
 				WriteResultA := readResultA + writeValueA
 				WriteResultB := readResultB + writeValueB
 				tx.Ops[2].Val = strconv.Itoa(WriteResultA)
-				smallbank.Update(readOpA.Key, strconv.Itoa(writeValueA))
+				peer.smallBank.Update(readOpA.Key, strconv.Itoa(writeValueA))
 				tx.Ops[3].Val = strconv.Itoa(WriteResultB)
-				smallbank.Update(readOpB.Key, strconv.Itoa(writeValueB))
+				peer.smallBank.Update(readOpB.Key, strconv.Itoa(writeValueB))
 			case writeCheck:
 				readOp := tx.Ops[0]
 				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-				readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 				WriteResult := readResult + writeValue
 				tx.Ops[1].Val = strconv.Itoa(WriteResult)
-				smallbank.Update(readOp.Key, strconv.Itoa(WriteResult))
+				peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 			case query:
 				readOpSaving := tx.Ops[0]
 				readOpChecking := tx.Ops[1]
-				smallbank.Read(readOpSaving.Key)
-				smallbank.Read(readOpChecking.Key)
+				peer.smallBank.Read(readOpSaving.Key)
+				peer.smallBank.Read(readOpChecking.Key)
 			case amalgamate:
 				readOpSaving := tx.Ops[0]
 				readOpChecking := tx.Ops[1]
-				readResultSaving, _ := strconv.Atoi(smallbank.Read(readOpSaving.Key))
-				readResultChecking, _ := strconv.Atoi(smallbank.Read(readOpChecking.Key))
+				readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+				readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
 				writeResultSaving := 0
 				tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
-				smallbank.Update(readOpSaving.Key, strconv.Itoa(0))
+				peer.smallBank.Update(readOpSaving.Key, strconv.Itoa(0))
 				writeResultChecking := readResultSaving + readResultChecking
 				tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
-				smallbank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
+				peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
 			}
 		}
 	}
