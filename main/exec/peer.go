@@ -142,7 +142,6 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	return hashtable
 }
 func (peer *Peer) exec(epoch map[int]int) {
-	peer.mu.Lock()
 	//fmt.Println("exec start...")
 	startTime := time.Now()
 	if len(epoch) != 0 {
@@ -164,13 +163,14 @@ func (peer *Peer) exec(epoch map[int]int) {
 		fmt.Println(time.Since(startTime))
 		peer.OperationAfterExecution(instances)
 		fmt.Println(time.Since(startTime))
+		peer.mu.Lock()
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
 			record4id.index += epoch[id]
 			peer.record[id] = record4id
 		}
+		peer.mu.Unlock()
 	}
-	peer.mu.Unlock()
 
 }
 
@@ -501,19 +501,15 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	peer.mu.Unlock()
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
-	//peer.mu.Lock()
 	record4id := peer.record[id]
 	record4id.index += bias
 	peer.record[id] = record4id
-	//peer.mu.Unlock()
 }
 
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
-	peer.mu.Lock()
 	peer.blockTimeout = time.Duration(200*peer.id+200) * time.Millisecond
 	peer.blockTimeStamp = time.Now()
-	peer.mu.Unlock()
 }
 
 // 是否需要出块
@@ -590,7 +586,6 @@ func (peer *Peer) run() {
 	}
 }
 func (peer *Peer) checkComplete() bool {
-	peer.mu.Lock()
 	flag := true
 	for _, id := range peer.peersIds {
 		height := len(peer.record[id].blocks) - peer.record[id].index
@@ -598,7 +593,6 @@ func (peer *Peer) checkComplete() bool {
 			flag = false
 		}
 	}
-	peer.mu.Unlock()
 	return flag
 }
 func (peer *Peer) execInSequentialImpl(blocks []Block) {
@@ -660,7 +654,6 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 	}
 }
 func (peer *Peer) execInSequential() {
-	peer.mu.Lock()
 	blocks := make([]Block, 0)
 	for _, record := range peer.record {
 		block := record.blocks[record.index]
@@ -676,7 +669,6 @@ func (peer *Peer) execInSequential() {
 	}
 	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
 	//peer.NotExecBlockIndex += epoch[peer.id]
-	peer.mu.Unlock()
 }
 
 // 启动节点 Sequential模式
