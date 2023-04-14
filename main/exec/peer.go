@@ -369,7 +369,7 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 	}
 	wg4computeCascade.Wait()
 	// 获取所有address所对应的Instances,用于排序
-	OrderInstanceMap := make(map[string]OrderInstance, 0)
+	OrderInstanceMap := make(map[string]*OrderInstance, 0)
 	instanceDict := make(map[int]int, 0) // 对应有向图坐标
 	tmpIndex := 0
 	for _, instance := range instances {
@@ -377,8 +377,11 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 		tmpIndex++
 		for address, _ := range instance.cascade {
 			_, ok := OrderInstanceMap[address]
+			if ok {
+				fmt.Println(111)
+			}
 			if !ok {
-				OrderInstanceMap[address] = *newOrderInstance(address)
+				OrderInstanceMap[address] = newOrderInstance(address)
 			}
 			tmpOrderInstance := OrderInstanceMap[address]
 			tmpOrderInstance.appendInstance(instance)

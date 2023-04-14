@@ -1,7 +1,6 @@
 package exec
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -222,7 +221,6 @@ func (orderInstance *OrderInstance) OrderByDAG(sortOrder []int, indexDic map[int
 	for i := 0; i < len(orderInstance.instances)-1; i++ {
 		map4index2instance[indexDic[orderInstance.instances[i].peerId]] = orderInstance.instances[i]
 	}
-	fmt.Println(len(orderInstance.instances), len(sortOrder))
 	newInstances := make([]Instance, 0)
 	for _, index := range sortOrder {
 		instance, exist := map4index2instance[index]
