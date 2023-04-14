@@ -93,12 +93,6 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.record = generateRecordMap(peerId)
 	peer.execNumber = *newOpsNumber(0, peer.id)
 	peer.SmallBankInit()
-	//record := make(map[int]Record, 0)
-	//for _, index := range peerList.getPeerId() {
-	//	record[index] = *newRecord(index)
-	//}
-	//peer.record = record
-	//peer.NotExecBlockIndex = 0
 	return peer
 }
 
@@ -122,7 +116,7 @@ func (peer *Peer) string() string {
 // 获取当前epoch中的{state: op->op}
 func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 	hashtable := make(map[string]StateSet)
-	record := peer.record[id]
+	record, _ := peer.record[id]
 	tmpTx := record.blocks[bias+record.index].txs
 	for txIndex, tx := range tmpTx {
 		if tx.abort {
@@ -168,7 +162,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 		peer.execInParalleling(execBlocks)
 		peer.OperationAfterExecution(instances)
 		for _, id := range peer.peersIds {
-			record4id := peer.record[id]
+			record4id, _ := peer.record[id]
 			record4id.index += epoch[id]
 			peer.record[id] = record4id
 		}
