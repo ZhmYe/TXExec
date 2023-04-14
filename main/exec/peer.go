@@ -377,9 +377,6 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 		tmpIndex++
 		for address, _ := range instance.cascade {
 			_, ok := OrderInstanceMap[address]
-			if ok {
-				fmt.Println(111)
-			}
 			if !ok {
 				OrderInstanceMap[address] = newOrderInstance(address)
 			}
