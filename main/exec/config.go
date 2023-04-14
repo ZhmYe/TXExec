@@ -3,6 +3,13 @@ package exec
 import "time"
 
 type Mode int
+type runType int
+
+const (
+	Sequential runType = iota
+	Paralleling
+	Mine
+)
 
 type Config struct {
 	BatchTxNum           int // 每个Batch中交易的数量
@@ -18,6 +25,7 @@ type Config struct {
 	PeerNumber           int           // 节点数量
 	execTimeout          time.Duration // 运行时间
 	execTimeNumber       int           // 运行时间数值
+	RunType              runType       // 执行方式
 }
 
 var config = Config{
@@ -34,4 +42,5 @@ var config = Config{
 	PeerNumber:           4,
 	execTimeout:          time.Duration(1) * time.Minute,
 	execTimeNumber:       60,
+	RunType:              Sequential,
 }

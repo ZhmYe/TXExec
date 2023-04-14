@@ -535,14 +535,7 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 	return tmp.getBlockHeight()
 }
 
-type execType int
-
-const (
-	Waiting execType = iota
-	Paralleling
-)
-
-// 启动节点
+// 启动节点 Mine模式
 func (peer *Peer) run() {
 	for {
 		if peer.state == Dead {
@@ -600,6 +593,97 @@ func (peer *Peer) checkComplete() bool {
 	peer.mu.Unlock()
 	return flag
 }
+func (peer *Peer) execWaitingImpl(blocks []Block) {
+	for _, block := range blocks {
+		for _, tx := range block.txs {
+			switch tx.txType {
+			case transactSavings:
+				readOp := tx.Ops[0]
+				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+				readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+				WriteResult := readResult + writeValue
+				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				smallbank.Update(readOp.Key, strconv.Itoa(WriteResult))
+			case depositChecking:
+				readOp := tx.Ops[0]
+				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+				readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+				WriteResult := readResult + writeValue
+				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				smallbank.Update(readOp.Key, strconv.Itoa(WriteResult))
+			case sendPayment:
+				readOpA := tx.Ops[0]
+				readOpB := tx.Ops[1]
+				writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+				writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+				readResultA, _ := strconv.Atoi(smallbank.Read(readOpA.Key))
+				readResultB, _ := strconv.Atoi(smallbank.Read(readOpB.Key))
+				WriteResultA := readResultA + writeValueA
+				WriteResultB := readResultB + writeValueB
+				tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+				smallbank.Update(readOpA.Key, strconv.Itoa(writeValueA))
+				tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+				smallbank.Update(readOpB.Key, strconv.Itoa(writeValueB))
+			case writeCheck:
+				readOp := tx.Ops[0]
+				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+				readResult, _ := strconv.Atoi(smallbank.Read(readOp.Key))
+				WriteResult := readResult + writeValue
+				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				smallbank.Update(readOp.Key, strconv.Itoa(WriteResult))
+			case query:
+				readOpSaving := tx.Ops[0]
+				readOpChecking := tx.Ops[1]
+				smallbank.Read(readOpSaving.Key)
+				smallbank.Read(readOpChecking.Key)
+			case amalgamate:
+				readOpSaving := tx.Ops[0]
+				readOpChecking := tx.Ops[1]
+				readResultSaving, _ := strconv.Atoi(smallbank.Read(readOpSaving.Key))
+				readResultChecking, _ := strconv.Atoi(smallbank.Read(readOpChecking.Key))
+				writeResultSaving := 0
+				tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
+				smallbank.Update(readOpSaving.Key, strconv.Itoa(0))
+				writeResultChecking := readResultSaving + readResultChecking
+				tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+				smallbank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
+			}
+		}
+	}
+}
+func (peer *Peer) execWaiting() {
+	peer.mu.Lock()
+	blocks := make([]Block, 0)
+	for _, record := range peer.record {
+		block := record.blocks[record.index]
+		blocks = append(blocks, block)
+	}
+	// 执行交易
+	peer.execWaitingImpl(blocks)
+	peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
+	for _, id := range peer.peersIds {
+		record4id := peer.record[id]
+		record4id.index += 1
+		peer.record[id] = record4id
+	}
+	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
+	//peer.NotExecBlockIndex += epoch[peer.id]
+	peer.mu.Unlock()
+}
+
+// 启动节点 Sequential模式
+func (peer *Peer) runInSequential() {
+	for {
+		if peer.state == Dead {
+			break
+		}
+		if peer.checkComplete() {
+			peer.log(peer.RecordLog())
+			//fmt.Println(peer.RecordLog())
+			peer.execWaiting()
+		}
+	}
+}
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
@@ -616,7 +700,12 @@ func (peer *Peer) start() {
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
 	}(peer)
-	peer.run()
+	switch config.RunType {
+	case Mine:
+		peer.run()
+	case Sequential:
+		peer.runInSequential()
+	}
 
 }
 

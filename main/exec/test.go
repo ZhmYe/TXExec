@@ -86,7 +86,7 @@ func PeerInit() {
 			//fmt.Println(totalExecBlockNumber)
 			//fmt.Println(statisticalResults.execNumber)
 			fmt.Print("tps: ")
-			fmt.Println(float64(totalExecBlockNumber) * float64(config.BatchTxNum) / float64(config.execTimeNumber))
+			fmt.Println(float64(statisticalResults.getExecNumber()) / float64(config.execTimeNumber))
 			fmt.Print("abort rate:")
 			fmt.Println(1 - float64(statisticalResults.getExecNumber())/(float64(totalExecBlockNumber)*float64(config.BatchTxNum)))
 			break
