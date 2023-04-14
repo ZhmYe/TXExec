@@ -372,12 +372,14 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 	OrderInstanceMap := make(map[string]*OrderInstance, 0)
 	instanceDict := make(map[int]int, 0) // 对应有向图坐标
 	tmpIndex := 0
-	fmt.Println(len(instances))
 	for _, instance := range instances {
 		instanceDict[instance.peerId] = tmpIndex
 		tmpIndex++
 		for address, _ := range instance.cascade {
 			_, ok := OrderInstanceMap[address]
+			if ok {
+				fmt.Println(111)
+			}
 			if !ok {
 				OrderInstanceMap[address] = newOrderInstance(address)
 			}
