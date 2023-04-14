@@ -561,9 +561,9 @@ func (peer *Peer) run() {
 					heightMap[id] = height
 					total += height
 				}
-				if total > 10 {
+				if total > 5 {
 					for id, height := range heightMap {
-						tmp := int(math.Floor(float64(10) * float64(height) / float64(total)))
+						tmp := int(math.Floor(float64(5) * float64(height) / float64(total)))
 						heightMap[id] = tmp
 					}
 				}
