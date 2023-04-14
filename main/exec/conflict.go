@@ -24,10 +24,13 @@ func ConflictTest() {
 		for _, address := range tmpAddress {
 			_, exist := addressA[address]
 			if exist {
-				innerConflictNumber++
+				flag = true
 				continue
 			}
 			addressA[address] = true
+		}
+		if flag {
+			innerConflictNumber++
 		}
 	}
 	fmt.Print("conflict rate in blocks:")
