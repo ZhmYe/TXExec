@@ -134,12 +134,18 @@ func (s *Smallbank) GetRandomAmount() int {
 
 func (s *Smallbank) GetNormalRandomIndex() int {
 	n := len(s.savings)
-	for {
-		x := int(rand.NormFloat64()*config.StdDiff) + n/2
-		if x >= 0 && x < n {
-			return x
-		}
+	hotRateCheck := rand.Float64()
+	if hotRateCheck < config.HotKeyRate {
+		return int(rand.Float64() * float64(n) * config.HotKey)
+	} else {
+		return int(rand.Float64()*float64(n)*1-(config.HotKey)) + int(float64(n)*config.HotKey)
 	}
+	//for {
+	//	x := int(rand.NormFloat64()*config.StdDiff) + n/2
+	//	if x >= 0 && x < n {
+	//		return x
+	//	}
+	//}
 }
 
 func (s *Smallbank) GetRandomTx() *Tx {
