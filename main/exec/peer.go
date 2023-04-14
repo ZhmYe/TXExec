@@ -563,8 +563,19 @@ func (peer *Peer) run() {
 				}
 				if total > 10 {
 					for id, height := range heightMap {
-						tmp := int(math.Floor(float64(10) * float64(height) / float64(total)))
-						heightMap[id] = tmp
+						if height == 0 {
+							heightMap[id] = 0
+						} else {
+							tmp := int(math.Floor(float64(10) * float64(height) / float64(total)))
+							if tmp == 0 {
+								heightMap[id] = 1
+							} else if tmp > 11-config.PeerNumber {
+								heightMap[id] = 11 - config.PeerNumber
+							} else {
+								heightMap[id] = tmp
+							}
+
+						}
 					}
 				}
 				time.Sleep(time.Duration(100) * time.Millisecond) // 告诉其它节点epoch节点耗时
