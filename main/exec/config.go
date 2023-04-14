@@ -29,7 +29,7 @@ type Config struct {
 }
 
 var config = Config{
-	BatchTxNum:           5000,
+	BatchTxNum:           2500,
 	ValueSize:            64,
 	OpsPerTx:             3,
 	OriginKeys:           10000, // 10000
