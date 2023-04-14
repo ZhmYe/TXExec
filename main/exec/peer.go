@@ -453,7 +453,10 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 		//go func(tmpInstance OrderInstance, execWg *sync.WaitGroup) {
 		//	defer execWg.Done()
 		tmpInstance.OrderByDAG(topologicalOrder, instanceDict)
-		tmpInstance.execLastWrite()
+		flag, lastWrite := tmpInstance.execLastWrite()
+		if flag {
+			peer.smallBank.Update(lastWrite.op.Key, lastWrite.op.Val)
+		}
 		//fmt.Println("execLastWrite success...")
 		//}(tmpInstance, &execWg)
 	}
@@ -600,7 +603,7 @@ func (peer *Peer) checkComplete() bool {
 	peer.mu.Unlock()
 	return flag
 }
-func (peer *Peer) execWaitingImpl(blocks []Block) {
+func (peer *Peer) execInSequentialImpl(blocks []Block) {
 	for _, block := range blocks {
 		for _, tx := range block.txs {
 			switch tx.txType {
@@ -658,7 +661,7 @@ func (peer *Peer) execWaitingImpl(blocks []Block) {
 		}
 	}
 }
-func (peer *Peer) execWaiting() {
+func (peer *Peer) execInSequential() {
 	peer.mu.Lock()
 	blocks := make([]Block, 0)
 	for _, record := range peer.record {
@@ -666,7 +669,7 @@ func (peer *Peer) execWaiting() {
 		blocks = append(blocks, block)
 	}
 	// 执行交易
-	peer.execWaitingImpl(blocks)
+	peer.execInSequentialImpl(blocks)
 	peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
@@ -687,7 +690,7 @@ func (peer *Peer) runInSequential() {
 		if peer.checkComplete() {
 			peer.log(peer.RecordLog())
 			//fmt.Println(peer.RecordLog())
-			peer.execWaiting()
+			peer.execInSequential()
 		}
 	}
 }

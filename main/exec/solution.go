@@ -1,6 +1,8 @@
 package exec
 
-import "math"
+import (
+	"math"
+)
 
 type StateSet struct {
 	ReadSet  []Unit // 读集
@@ -253,7 +255,7 @@ func (orderInstance *OrderInstance) OrderByDAG(sortOrder []int, indexDic map[int
 	}
 
 }
-func (orderInstance *OrderInstance) execLastWrite() {
+func (orderInstance *OrderInstance) execLastWrite() (bool, Unit) {
 	lastWrite := *new(Unit)
 	checkFlag := false
 	for instanceIndex := len(orderInstance.instances) - 1; instanceIndex >= 0; instanceIndex-- {
@@ -280,7 +282,5 @@ func (orderInstance *OrderInstance) execLastWrite() {
 			break
 		}
 	}
-	if checkFlag {
-		smallbank.Update(lastWrite.op.Key, lastWrite.op.Val)
-	}
+	return checkFlag, lastWrite
 }
