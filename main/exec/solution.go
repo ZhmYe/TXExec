@@ -153,7 +153,6 @@ func (instance *Instance) abortReadSet(readSet []Unit) {
 			continue
 		}
 		repeatCheck[unit.txHash] = true
-		fmt.Println(111)
 		unit.tx.abort = true
 		CascadeInAddress, haveCascade := instance.record[unit.txHash]
 		if haveCascade {
@@ -248,6 +247,7 @@ func (orderInstance *OrderInstance) OrderByDAG(sortOrder []int, indexDic map[int
 	//	}
 	//}
 	// 排好序后，除了第一个Instances外所有的Instances的第一个块的读集（有可能没有）需要全部abort，并将其级联的所有读abort
+	fmt.Println(111)
 	if len(orderInstance.instances) > 1 {
 		for i := 1; i <= len(orderInstance.instances)-1; i++ {
 			tmpInstance := orderInstance.instances[i]
