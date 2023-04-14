@@ -152,7 +152,7 @@ func (instance *Instance) abortReadSet(readSet []Unit) {
 			continue
 		}
 		repeatCheck[unit.txHash] = true
-		//unit.tx.abort = true
+		unit.tx.abort = true
 		CascadeInAddress, haveCascade := instance.record[unit.txHash]
 		if haveCascade {
 			for _, eachReadSet := range CascadeInAddress {
