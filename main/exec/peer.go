@@ -77,6 +77,7 @@ type Peer struct {
 	blockTimeout   time.Duration   // 出块时间
 	blockTimeStamp time.Time       // 最后一次出块的时间
 	execNumber     OpsNumber       //执行的ops数量
+	smallBank      *Smallbank      // 每个节点的smallbank
 }
 
 func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
@@ -91,6 +92,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.peersIds = peerId
 	peer.record = generateRecordMap(peerId)
 	peer.execNumber = *newOpsNumber(0, peer.id)
+	peer.SmallBankInit()
 	//record := make(map[int]Record, 0)
 	//for _, index := range peerList.getPeerId() {
 	//	record[index] = *newRecord(index)
@@ -98,6 +100,11 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	//peer.record = record
 	//peer.NotExecBlockIndex = 0
 	return peer
+}
+
+// SmallBankInit Init, leveldb初始化，插入指定数量的key,value键值对
+func (peer *Peer) SmallBankInit() {
+	peer.smallBank = NewSmallbank("levdb", config.OriginKeys)
 }
 func (peer *Peer) string() string {
 	var state string

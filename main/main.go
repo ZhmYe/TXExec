@@ -2,10 +2,10 @@ package main
 
 import "TXExec/exec"
 
-func testParalleling() {
+func test() {
 	exec.PeerInit()
 }
 func main() {
 	exec.Init()
-	testParalleling()
+	test()
 }
