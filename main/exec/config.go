@@ -32,7 +32,7 @@ var config = Config{
 	BatchTxNum:           10000,
 	ValueSize:            64,
 	OpsPerTx:             3,
-	OriginKeys:           100000, // 10000
+	OriginKeys:           10000, // 10000
 	WRate:                0.5,
 	ConflictMode:         false,
 	InstanceConflictRate: 0.2,
