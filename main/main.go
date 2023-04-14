@@ -6,6 +6,6 @@ func test() {
 	exec.PeerInit()
 }
 func main() {
-	exec.Init()
+	//exec.Init()
 	test()
 }
