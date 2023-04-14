@@ -138,7 +138,7 @@ func (s *Smallbank) GetNormalRandomIndex() int {
 	if hotRateCheck < config.HotKeyRate {
 		return int(rand.Float64() * float64(n) * config.HotKey)
 	} else {
-		return int(rand.Float64()*float64(n)*1-(config.HotKey)) + int(float64(n)*config.HotKey)
+		return int(rand.Float64()*float64(n)*(1-config.HotKey)) + int(float64(n)*config.HotKey)
 	}
 	//for {
 	//	x := int(rand.NormFloat64()*config.StdDiff) + n/2
