@@ -586,6 +586,7 @@ func (peer *Peer) run() {
 	}
 }
 func (peer *Peer) checkComplete() bool {
+	peer.mu.Lock()
 	flag := true
 	for _, id := range peer.peersIds {
 		height := len(peer.record[id].blocks) - peer.record[id].index
@@ -593,6 +594,7 @@ func (peer *Peer) checkComplete() bool {
 			flag = false
 		}
 	}
+	peer.mu.Unlock()
 	return flag
 }
 func (peer *Peer) execInSequentialImpl(blocks []Block) {
