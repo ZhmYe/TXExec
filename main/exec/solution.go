@@ -222,6 +222,7 @@ func (orderInstance *OrderInstance) OrderByDAG(sortOrder []int, indexDic map[int
 	for i := 0; i < len(orderInstance.instances)-1; i++ {
 		map4index2instance[indexDic[orderInstance.instances[i].peerId]] = orderInstance.instances[i]
 	}
+	fmt.Println(len(orderInstance.instances), len(sortOrder))
 	newInstances := make([]Instance, 0)
 	for _, index := range sortOrder {
 		instance, exist := map4index2instance[index]
@@ -246,7 +247,6 @@ func (orderInstance *OrderInstance) OrderByDAG(sortOrder []int, indexDic map[int
 	//		break
 	//	}
 	//}
-	fmt.Println(len(orderInstance.instances))
 	// 排好序后，除了第一个Instances外所有的Instances的第一个块的读集（有可能没有）需要全部abort，并将其级联的所有读abort
 	if len(orderInstance.instances) > 1 {
 		for i := 1; i <= len(orderInstance.instances)-1; i++ {
