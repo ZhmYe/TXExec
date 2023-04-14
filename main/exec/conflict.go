@@ -20,6 +20,8 @@ func ConflictTest() {
 			addressA[op.Key] = true
 		}
 	}
+	fmt.Print("conflict rate in blocks:")
+	fmt.Println(float64(innerConflictNumber) / float64(config.BatchTxNum))
 	conflictNumber := 0
 	for _, tx := range txsB {
 		for _, op := range tx.Ops {
