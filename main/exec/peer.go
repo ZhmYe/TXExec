@@ -80,7 +80,7 @@ type Peer struct {
 	smallBank      *Smallbank      // 每个节点的smallbank
 }
 
-func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
+func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []string, savingAmount []int, checking []string, checkingAmount []int) *Peer {
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
@@ -92,13 +92,13 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int) *Peer {
 	peer.peersIds = peerId
 	peer.record = generateRecordMap(peerId)
 	peer.execNumber = *newOpsNumber(0, peer.id)
-	peer.SmallBankInit()
+	peer.SmallBankInit(saving, savingAmount, checking, checkingAmount)
 	return peer
 }
 
 // SmallBankInit Init, leveldb初始化，插入指定数量的key,value键值对
-func (peer *Peer) SmallBankInit() {
-	peer.smallBank = NewSmallbank("leveldb"+strconv.Itoa(peer.id), config.OriginKeys)
+func (peer *Peer) SmallBankInit(saving []string, savingAmount []int, checking []string, checkingAmount []int) {
+	peer.smallBank = NewSmallbank("leveldb"+strconv.Itoa(peer.id), saving, savingAmount, checking, checkingAmount)
 }
 func (peer *Peer) string() string {
 	var state string

@@ -210,11 +210,29 @@ func (s *Smallbank) Write(key, val string) {
 func (s *Smallbank) Update(key, val string) {
 	s.db.Put([]byte(key), []byte(val), nil)
 }
-func NewSmallbank(path string, n int) *Smallbank {
+func GenSaving(n int) ([]string, []int) {
+	saving := make([]string, n)
+	amount := make([]int, n)
+	for i := range saving {
+		saving[i] = uuid.NewString()
+		amount[i] = RandomRange(1e4, 1e5)
+	}
+	return saving, amount
+}
+func GenChecking(n int) ([]string, []int) {
+	checking := make([]string, n)
+	amount := make([]int, n)
+	for i := range checking {
+		checking[i] = uuid.NewString()
+		amount[i] = RandomRange(1e3, 1e4)
+	}
+	return checking, amount
+}
+func NewSmallbank(path string, saving []string, savingAmount []int, checking []string, checkingAmount []int) *Smallbank {
 	// 为特定数量的用户创建一个支票账户和一个储蓄账户，第i个用户的储蓄金地址为savings[i],支票地址为checkings[i]
 	s := &Smallbank{
-		savings:   make([]string, n),
-		checkings: make([]string, n),
+		savings:   saving,
+		checkings: checking,
 	}
 	var err error
 	s.db, err = leveldb.OpenFile(path, nil)
@@ -222,12 +240,8 @@ func NewSmallbank(path string, n int) *Smallbank {
 		panic("open leveldb failed!")
 	}
 	for i := range s.savings {
-		s.savings[i] = uuid.NewString()
-		s.checkings[i] = uuid.NewString()
-		savingAmount := RandomRange(1e4, 1e5)
-		checkingAmount := RandomRange(1e3, 1e4)
-		s.db.Put([]byte(s.savings[i]), []byte(strconv.Itoa(savingAmount)), nil)
-		s.db.Put([]byte(s.checkings[i]), []byte(strconv.Itoa(checkingAmount)), nil)
+		s.db.Put([]byte(s.savings[i]), []byte(strconv.Itoa(savingAmount[i])), nil)
+		s.db.Put([]byte(s.checkings[i]), []byte(strconv.Itoa(checkingAmount[i])), nil)
 	}
 	return s
 }

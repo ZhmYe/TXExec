@@ -67,7 +67,9 @@ func PeerInit() {
 			state = Monitor
 			flag = true
 		}
-		var peer = newPeer(id, state, timestamp, peerId)
+		saving, savingAmount := GenSaving(config.OriginKeys)
+		checking, checkingAmount := GenChecking(config.OriginKeys)
+		var peer = newPeer(id, state, timestamp, peerId, saving, savingAmount, checking, checkingAmount)
 		//peerList.peers = append(peerList.peers, *peer)
 		peerMap[id] = peer
 	}
