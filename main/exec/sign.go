@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
-	"fmt"
 )
 
 func getSignInfo() (*rsa.PublicKey, [32]byte, []byte) {
@@ -26,6 +25,5 @@ func getSignInfo() (*rsa.PublicKey, [32]byte, []byte) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("get sign...")
 	return publicKey, hashed, signature
 }
