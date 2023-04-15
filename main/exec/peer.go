@@ -143,7 +143,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println("exec start...")
-	//startTime := time.Now()
+	startTime := time.Now()
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
 		execBlocks := make(map[int][]Block, 0)
@@ -160,10 +160,10 @@ func (peer *Peer) exec(epoch map[int]int) {
 			instances = append(instances, *instance)
 		}
 		peer.execInParalleling(execBlocks)
-		//fmt.Println(time.Since(startTime))
-		//startTime = time.Now()
+		fmt.Println(time.Since(startTime))
+		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
-		//fmt.Println(time.Since(startTime))
+		fmt.Println(time.Since(startTime))
 		peer.mu.Lock()
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
@@ -624,7 +624,7 @@ func (peer *Peer) checkComplete() bool {
 }
 func (peer *Peer) execInSequentialImpl(blocks []Block) {
 	for _, block := range blocks {
-		time.Sleep(time.Duration(10) * time.Millisecond)
+		//time.Sleep(time.Duration(10) * time.Millisecond)
 		for _, tx := range block.txs {
 			switch tx.txType {
 			case transactSavings:
