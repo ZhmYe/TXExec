@@ -205,7 +205,9 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					tmpTx := transaction
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
+						startTime := time.Now()
 						err := rsa.VerifyPKCS1v15(tmpTx.publicKey, crypto.SHA256, tmpTx.hashed[:], tmpTx.signature)
+						fmt.Println(time.Since(startTime))
 						if err != nil {
 							panic(err)
 						}
