@@ -1,8 +1,6 @@
 package exec
 
 import (
-	"crypto"
-	"crypto/rsa"
 	"fmt"
 	"math"
 	"math/rand"
@@ -631,12 +629,12 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 		//fmt.Println(len(block.txs))
 		for _, tx := range block.txs {
 			fmt.Println("start verify...")
-			startTime := time.Now()
-			err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(time.Since(startTime))
+			//startTime := time.Now()
+			//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			//if err != nil {
+			//	panic(err)
+			//}
+			//fmt.Println(time.Since(startTime))
 			switch tx.txType {
 			case transactSavings:
 				readOp := tx.Ops[0]
