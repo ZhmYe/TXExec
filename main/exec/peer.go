@@ -84,7 +84,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []st
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
-	peer.epochTimeout = time.Duration(500) * time.Millisecond
+	peer.epochTimeout = time.Duration(50) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
 	peer.blockTimeStamp = timestamp
