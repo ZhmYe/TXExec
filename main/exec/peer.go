@@ -160,6 +160,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 			instances = append(instances, *instance)
 		}
 		peer.execInParalleling(execBlocks)
+		fmt.Print("exec time:")
 		fmt.Println(time.Since(startTime))
 		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
