@@ -33,7 +33,7 @@ var config = Config{
 	ValueSize:            64,
 	OpsPerTx:             3,
 	OriginKeys:           5000,
-	WRate:                0.5,
+	WRate:                0.2,
 	ConflictMode:         false,
 	InstanceConflictRate: 0.2,
 	HotKey:               0.2,
