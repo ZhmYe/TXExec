@@ -207,12 +207,12 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
 						testTime := time.Now()
-						err := rsa.VerifyPKCS1v15(tmpTx.publicKey, crypto.SHA256, tmpTx.hashed[:], tmpTx.signature)
-						//fmt.Print("very time:")
-						//fmt.Println(time.Since(startTime))
-						if err != nil {
-							panic(err)
-						}
+						//err := rsa.VerifyPKCS1v15(tmpTx.publicKey, crypto.SHA256, tmpTx.hashed[:], tmpTx.signature)
+						////fmt.Print("very time:")
+						////fmt.Println(time.Since(startTime))
+						//if err != nil {
+						//	panic(err)
+						//}
 						defer wg4tx.Done()
 						//switch tx.txType {
 						//case transactSavings:
