@@ -636,6 +636,7 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 				WriteResult := readResult + writeValue
 				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				fmt.Println(readResult)
 				peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 			case depositChecking:
 				readOp := tx.Ops[0]
