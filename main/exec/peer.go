@@ -519,7 +519,11 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
-	peer.blockTimeout = time.Duration(100*peer.id+300) * time.Millisecond
+	if peer.id != 3 {
+		peer.blockTimeout = time.Duration(50) * time.Millisecond
+	} else {
+		peer.blockTimeout = time.Duration(150) * time.Millisecond
+	}
 	peer.blockTimeStamp = time.Now()
 }
 
