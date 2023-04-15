@@ -201,6 +201,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 				//var buffer sync.Map
 				var wg4tx sync.WaitGroup
 				wg4tx.Add(len(blocks[i].txs))
+				startTime := time.Now()
 				for _, transaction := range blocks[i].txs {
 					tmpTx := transaction
 					//tx := transaction
@@ -355,6 +356,8 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					}(tmpTx, &wg4tx)
 				}
 				wg4tx.Wait()
+				fmt.Print("each block:")
+				fmt.Println(time.Since(startTime))
 			}
 		}(tmpBlocks, &wg)
 	}
