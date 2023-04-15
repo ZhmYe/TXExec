@@ -25,15 +25,15 @@ func (s *Smallbank) TransactSavings(account string, amount int) *Tx {
 		Key:  account,
 		Val:  strconv.Itoa(amount),
 	}
-	publicKey, hashed, signature := getSignInfo()
+	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:       []Op{r, w},
-		abort:     false,
-		sequence:  -1,
-		txType:    transactSavings,
-		publicKey: publicKey,
-		hashed:    hashed,
-		signature: signature,
+		Ops:      []Op{r, w},
+		abort:    false,
+		sequence: -1,
+		txType:   transactSavings,
+		//publicKey: publicKey,
+		//hashed:    hashed,
+		//signature: signature,
 	}
 }
 
@@ -48,15 +48,15 @@ func (s *Smallbank) DepositChecking(account string, amount int) *Tx {
 		Key:  account,
 		Val:  strconv.Itoa(amount),
 	}
-	publicKey, hashed, signature := getSignInfo()
+	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:       []Op{r, w},
-		abort:     false,
-		sequence:  -1,
-		txType:    depositChecking,
-		publicKey: publicKey,
-		hashed:    hashed,
-		signature: signature,
+		Ops:      []Op{r, w},
+		abort:    false,
+		sequence: -1,
+		txType:   depositChecking,
+		//publicKey: publicKey,
+		//hashed:    hashed,
+		//signature: signature,
 	}
 }
 
@@ -80,15 +80,15 @@ func (s *Smallbank) SendPayment(accountA string, accountB string, amount int) *T
 		Key:  accountB,
 		Val:  strconv.Itoa(amount),
 	}
-	publicKey, hashed, signature := getSignInfo()
+	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:       []Op{ra, rb, wa, wb},
-		abort:     false,
-		sequence:  -1,
-		txType:    sendPayment,
-		publicKey: publicKey,
-		hashed:    hashed,
-		signature: signature,
+		Ops:      []Op{ra, rb, wa, wb},
+		abort:    false,
+		sequence: -1,
+		txType:   sendPayment,
+		//publicKey: publicKey,
+		//hashed:    hashed,
+		//signature: signature,
 	}
 }
 
@@ -103,15 +103,15 @@ func (s *Smallbank) WriteCheck(account string, amount int) *Tx {
 		Key:  account,
 		Val:  strconv.Itoa(-amount),
 	}
-	publicKey, hashed, signature := getSignInfo()
+	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:       []Op{r, w},
-		abort:     false,
-		sequence:  -1,
-		txType:    writeCheck,
-		publicKey: publicKey,
-		hashed:    hashed,
-		signature: signature,
+		Ops:      []Op{r, w},
+		abort:    false,
+		sequence: -1,
+		txType:   writeCheck,
+		//publicKey: publicKey,
+		//hashed:    hashed,
+		//signature: signature,
 	}
 }
 
@@ -135,15 +135,15 @@ func (s *Smallbank) Amalgamate(saving string, checking string) *Tx {
 		Key:  checking,
 		Val:  strconv.Itoa(0),
 	}
-	publicKey, hashed, signature := getSignInfo()
+	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:       []Op{ra, rb, wa, wb},
-		abort:     false,
-		sequence:  -1,
-		txType:    amalgamate,
-		publicKey: publicKey,
-		hashed:    hashed,
-		signature: signature,
+		Ops:      []Op{ra, rb, wa, wb},
+		abort:    false,
+		sequence: -1,
+		txType:   amalgamate,
+		//publicKey: publicKey,
+		//hashed:    hashed,
+		//signature: signature,
 	}
 }
 
@@ -157,15 +157,15 @@ func (s *Smallbank) Query(saving string, checking string) *Tx {
 		Type: OpRead,
 		Key:  checking,
 	}
-	publicKey, hashed, signature := getSignInfo()
+	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:       []Op{ra, rb},
-		abort:     false,
-		sequence:  -1,
-		txType:    query,
-		publicKey: publicKey,
-		hashed:    hashed,
-		signature: signature,
+		Ops:      []Op{ra, rb},
+		abort:    false,
+		sequence: -1,
+		txType:   query,
+		//publicKey: publicKey,
+		//hashed:    hashed,
+		//signature: signature,
 	}
 }
 
