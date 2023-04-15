@@ -55,6 +55,7 @@ func PeerStop() StatisticalResults {
 func PeerInit() {
 	//peerList.config = config
 	peerId := generateIds(config.PeerNumber)
+	publicKey, hashed, signature := getSignInfo()
 	var timestamp = time.Now()
 	var flag = false
 	saving, savingAmount := GenSaving(config.OriginKeys)
@@ -69,7 +70,7 @@ func PeerInit() {
 			state = Monitor
 			flag = true
 		}
-		var peer = newPeer(id, state, timestamp, peerId, saving, savingAmount, checking, checkingAmount)
+		var peer = newPeer(id, state, timestamp, peerId, saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
 		//peerList.peers = append(peerList.peers, *peer)
 		peerMap[id] = peer
 	}

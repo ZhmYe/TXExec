@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"crypto/rsa"
 	"github.com/google/uuid"
 	"github.com/syndtr/goleveldb/leveldb"
 	"math/rand"
@@ -10,6 +11,9 @@ import (
 type Smallbank struct {
 	savings   []string
 	checkings []string
+	publicKey *rsa.PublicKey
+	hashed    [32]byte
+	signature []byte
 	db        *leveldb.DB
 }
 
@@ -24,15 +28,14 @@ func (s *Smallbank) TransactSavings(account string, amount int) *Tx {
 		Key:  account,
 		Val:  strconv.Itoa(amount),
 	}
-	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:      []Op{r, w},
-		abort:    false,
-		sequence: -1,
-		txType:   transactSavings,
-		//publicKey: publicKey,
-		//hashed:    hashed,
-		//signature: signature,
+		Ops:       []Op{r, w},
+		abort:     false,
+		sequence:  -1,
+		txType:    transactSavings,
+		publicKey: s.publicKey,
+		hashed:    s.hashed,
+		signature: s.signature,
 	}
 }
 
@@ -47,15 +50,14 @@ func (s *Smallbank) DepositChecking(account string, amount int) *Tx {
 		Key:  account,
 		Val:  strconv.Itoa(amount),
 	}
-	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:      []Op{r, w},
-		abort:    false,
-		sequence: -1,
-		txType:   depositChecking,
-		//publicKey: publicKey,
-		//hashed:    hashed,
-		//signature: signature,
+		Ops:       []Op{r, w},
+		abort:     false,
+		sequence:  -1,
+		txType:    depositChecking,
+		publicKey: s.publicKey,
+		hashed:    s.hashed,
+		signature: s.signature,
 	}
 }
 
@@ -79,15 +81,14 @@ func (s *Smallbank) SendPayment(accountA string, accountB string, amount int) *T
 		Key:  accountB,
 		Val:  strconv.Itoa(amount),
 	}
-	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:      []Op{ra, rb, wa, wb},
-		abort:    false,
-		sequence: -1,
-		txType:   sendPayment,
-		//publicKey: publicKey,
-		//hashed:    hashed,
-		//signature: signature,
+		Ops:       []Op{ra, rb, wa, wb},
+		abort:     false,
+		sequence:  -1,
+		txType:    sendPayment,
+		publicKey: s.publicKey,
+		hashed:    s.hashed,
+		signature: s.signature,
 	}
 }
 
@@ -102,15 +103,14 @@ func (s *Smallbank) WriteCheck(account string, amount int) *Tx {
 		Key:  account,
 		Val:  strconv.Itoa(-amount),
 	}
-	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:      []Op{r, w},
-		abort:    false,
-		sequence: -1,
-		txType:   writeCheck,
-		//publicKey: publicKey,
-		//hashed:    hashed,
-		//signature: signature,
+		Ops:       []Op{r, w},
+		abort:     false,
+		sequence:  -1,
+		txType:    writeCheck,
+		publicKey: s.publicKey,
+		hashed:    s.hashed,
+		signature: s.signature,
 	}
 }
 
@@ -134,15 +134,14 @@ func (s *Smallbank) Amalgamate(saving string, checking string) *Tx {
 		Key:  checking,
 		Val:  strconv.Itoa(0),
 	}
-	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:      []Op{ra, rb, wa, wb},
-		abort:    false,
-		sequence: -1,
-		txType:   amalgamate,
-		//publicKey: publicKey,
-		//hashed:    hashed,
-		//signature: signature,
+		Ops:       []Op{ra, rb, wa, wb},
+		abort:     false,
+		sequence:  -1,
+		txType:    amalgamate,
+		publicKey: s.publicKey,
+		hashed:    s.hashed,
+		signature: s.signature,
 	}
 }
 
@@ -156,15 +155,14 @@ func (s *Smallbank) Query(saving string, checking string) *Tx {
 		Type: OpRead,
 		Key:  checking,
 	}
-	//publicKey, hashed, signature := getSignInfo()
 	return &Tx{
-		Ops:      []Op{ra, rb},
-		abort:    false,
-		sequence: -1,
-		txType:   query,
-		//publicKey: publicKey,
-		//hashed:    hashed,
-		//signature: signature,
+		Ops:       []Op{ra, rb},
+		abort:     false,
+		sequence:  -1,
+		txType:    query,
+		publicKey: s.publicKey,
+		hashed:    s.hashed,
+		signature: s.signature,
 	}
 }
 
@@ -227,7 +225,6 @@ func (s *Smallbank) GenTxSet(n int) []*Tx {
 	for i := range txs {
 		txs[i] = s.GetRandomTx()
 	}
-	//fmt.Println(111)
 	return txs
 }
 
@@ -269,11 +266,14 @@ func GenChecking(n int) ([]string, []int) {
 	}
 	return checking, amount
 }
-func NewSmallbank(path string, saving []string, savingAmount []int, checking []string, checkingAmount []int) *Smallbank {
+func NewSmallbank(path string, saving []string, savingAmount []int, checking []string, checkingAmount []int, publicKey *rsa.PublicKey, hashed [32]byte, signature []byte) *Smallbank {
 	// 为特定数量的用户创建一个支票账户和一个储蓄账户，第i个用户的储蓄金地址为savings[i],支票地址为checkings[i]
 	s := &Smallbank{
 		savings:   saving,
 		checkings: checking,
+		pubicKey:  publicKey,
+		hashed:    hashed,
+		signature: signature,
 	}
 	var err error
 	s.db, err = leveldb.OpenFile(path, nil)

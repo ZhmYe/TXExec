@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"crypto/rsa"
 	"fmt"
 	"math"
 	"math/rand"
@@ -80,7 +81,7 @@ type Peer struct {
 	smallBank      *Smallbank      // 每个节点的smallbank
 }
 
-func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []string, savingAmount []int, checking []string, checkingAmount []int) *Peer {
+func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []string, savingAmount []int, checking []string, checkingAmount []int, publicKey *rsa.PublicKey, hashed [32]byte, signature []byte) *Peer {
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
@@ -92,7 +93,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []st
 	peer.peersIds = peerId
 	peer.record = generateRecordMap(peerId)
 	peer.execNumber = *newOpsNumber(0, peer.id)
-	peer.SmallBankInit(saving, savingAmount, checking, checkingAmount)
+	peer.SmallBankInit(saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
 	return peer
 }
 

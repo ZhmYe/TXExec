@@ -1,6 +1,8 @@
 package exec
 
-import "time"
+import (
+	"time"
+)
 
 type Mode int
 type runType int
