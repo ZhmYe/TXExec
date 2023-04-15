@@ -202,13 +202,13 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 				var wg4tx sync.WaitGroup
 				wg4tx.Add(len(blocks[i].txs))
 				for _, transaction := range blocks[i].txs {
-					err := rsa.VerifyPKCS1v15(transaction.publicKey, crypto.SHA256, transaction.hashed[:], transaction.signature)
-					if err != nil {
-						panic(err)
-					}
 					tmpTx := transaction
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
+						err := rsa.VerifyPKCS1v15(transaction.publicKey, crypto.SHA256, transaction.hashed[:], transaction.signature)
+						if err != nil {
+							panic(err)
+						}
 						defer wg4tx.Done()
 						switch tx.txType {
 						case transactSavings:
