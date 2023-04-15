@@ -787,6 +787,13 @@ func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
 }
 func (peer *Peer) DoubleDetectConflict(blocks []Block) {
 	AllTx := make([]*Tx, 0)
+	DAG := make([][]int, len(AllTx)) // 有向图邻接矩阵
+	for i := range DAG {
+		DAG[i] = make([]int, len(AllTx))
+		for j := range DAG[i] {
+			DAG[i][j] = 0
+		}
+	}
 	for _, block := range blocks {
 		AllTx = append(AllTx, block.txs...)
 	}
@@ -815,23 +822,21 @@ func (peer *Peer) DoubleDetectConflict(blocks []Block) {
 					}
 				}
 			}
-			conflictFlag4RW := false
-			conflictFlag4WR := false
 			for _, op := range txB.Ops {
 				if op.Type == OpRead {
 					_, conflict := WriteA[op.Key]
 					if conflict {
-						conflictFlag4RW = true
+						txB.abort = true
+						//conflictFlag4RW = true
+						//DAG[i][j] = 1
 					}
 				} else {
 					_, conflict := ReadA[op.Key]
 					if conflict {
-						conflictFlag4WR = true
+						txB.abort = true
+						//DAG[j][i] = 1
 					}
 				}
-			}
-			if conflictFlag4RW && conflictFlag4WR {
-				txB.abort = true
 			}
 		}
 	}
