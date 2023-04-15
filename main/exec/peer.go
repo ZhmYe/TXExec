@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"crypto"
 	"crypto/rsa"
 	"fmt"
 	"math"
@@ -98,8 +99,8 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []st
 }
 
 // SmallBankInit Init, leveldb初始化，插入指定数量的key,value键值对
-func (peer *Peer) SmallBankInit(saving []string, savingAmount []int, checking []string, checkingAmount []int) {
-	peer.smallBank = NewSmallbank("leveldb"+strconv.Itoa(peer.id), saving, savingAmount, checking, checkingAmount)
+func (peer *Peer) SmallBankInit(saving []string, savingAmount []int, checking []string, checkingAmount []int, publicKey *rsa.PublicKey, hashed [32]byte, signature []byte) {
+	peer.smallBank = NewSmallbank("leveldb"+strconv.Itoa(peer.id), saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
 }
 func (peer *Peer) string() string {
 	var state string
@@ -631,10 +632,10 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 		for _, tx := range block.txs {
 			//fmt.Println("start verify...")
 			//startTime := time.Now()
-			//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
-			//if err != nil {
-			//	panic(err)
-			//}
+			err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			if err != nil {
+				panic(err)
+			}
 			//fmt.Println(time.Since(startTime))
 			switch tx.txType {
 			case transactSavings:
