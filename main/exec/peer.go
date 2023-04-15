@@ -195,13 +195,21 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 				for _, transaction := range blocks[i].txs {
 					tmpTx := transaction
 					//tx := transaction
+					ants.Submit(func() {
+						err := rsa.VerifyPKCS1v15(tmpTx.publicKey, crypto.SHA256, tmpTx.hashed[:], tmpTx.signature)
+						//fmt.Print("very time:")
+						//fmt.Println(time.Since(startTime))
+						if err != nil {
+							panic(err)
+						}
+					})
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
-						//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
-						////fmt.Print("very time:")
-						////fmt.Println(time.Since(startTime))
-						//if err != nil {
-						//	panic(err)
-						//}
+						err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+						//fmt.Print("very time:")
+						//fmt.Println(time.Since(startTime))
+						if err != nil {
+							panic(err)
+						}
 						defer wg4tx.Done()
 						//switch tx.txType {
 						//case transactSavings:
