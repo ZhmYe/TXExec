@@ -631,7 +631,10 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 		//fmt.Println(len(block.txs))
 		for _, tx := range block.txs {
 			startTime := time.Now()
-			rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			if err != nil {
+				panic(err)
+			}
 			fmt.Println(time.Since(startTime))
 			switch tx.txType {
 			case transactSavings:
