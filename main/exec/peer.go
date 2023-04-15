@@ -694,7 +694,9 @@ func (peer *Peer) runInSequential() {
 		if peer.checkComplete() {
 			peer.log(peer.RecordLog())
 			//fmt.Println(peer.RecordLog())
+			startTime := time.Now()
 			peer.execInSequential()
+			fmt.Println(time.Since(startTime))
 		}
 	}
 }
