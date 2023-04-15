@@ -1,5 +1,7 @@
 package exec
 
+import "crypto/rsa"
+
 // OpType 操作类型
 type OpType int
 
@@ -28,8 +30,11 @@ const (
 
 // Tx 交易
 type Tx struct {
-	txType   TxType // 交易类型
-	Ops      []Op   // 交易中包含的操作
-	abort    bool   // 是否abort
-	sequence int    // sorting时的序列号
+	txType    TxType // 交易类型
+	Ops       []Op   // 交易中包含的操作
+	abort     bool   // 是否abort
+	sequence  int    // sorting时的序列号
+	publicKey *rsa.PublicKey
+	hashed    [32]byte
+	signature []byte
 }

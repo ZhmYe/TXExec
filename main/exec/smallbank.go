@@ -185,7 +185,12 @@ func (s *Smallbank) GetRandomTx() *Tx {
 func (s *Smallbank) GenTxSet(n int) []*Tx {
 	txs := make([]*Tx, n)
 	for i := range txs {
-		txs[i] = s.GetRandomTx()
+		publicKey, hashed, signature := getSignInfo()
+		RandomTx := s.GetRandomTx()
+		RandomTx.publicKey = publicKey
+		RandomTx.hashed = hashed
+		RandomTx.signature = signature
+		txs[i] = RandomTx
 	}
 	return txs
 }

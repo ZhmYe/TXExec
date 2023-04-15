@@ -1,6 +1,8 @@
 package exec
 
 import (
+	"crypto"
+	"crypto/rsa"
 	"fmt"
 	"math"
 	"math/rand"
@@ -629,6 +631,8 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 		//fmt.Println(len(block.txs))
 		for _, tx := range block.txs {
 			startTime := time.Now()
+			rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			fmt.Println(time.Since(startTime))
 			switch tx.txType {
 			case transactSavings:
 				readOp := tx.Ops[0]
@@ -636,7 +640,6 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 				WriteResult := readResult + writeValue
 				tx.Ops[1].Val = strconv.Itoa(WriteResult)
-				fmt.Println(readResult)
 				peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 			case depositChecking:
 				readOp := tx.Ops[0]
@@ -682,7 +685,6 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 				tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
 				peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
 			}
-			fmt.Println(time.Since(startTime))
 		}
 	}
 }
