@@ -188,10 +188,10 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 	//	tmpResult, _ := strconv.Atoi(smallbank.Read(address))
 	//	buffer[address] = tmpResult
 	//}
+	time.Sleep(time.Duration(10) * time.Millisecond)
 	for _, blocks := range ExecBlocks {
 		tmpBlocks := blocks
 		//tmpBuffer := buffer
-		time.Sleep(time.Duration(10) * time.Millisecond)
 		go func(blocks []Block, wg *sync.WaitGroup) {
 			defer wg.Done()
 			for i := 0; i < len(blocks); i++ {
