@@ -398,39 +398,32 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 			DAG[i][j] = 0
 		}
 	}
-	fmt.Print("get address:")
-	fmt.Println(time.Since(startTime))
-	startTime = time.Now()
 	// 计算方差并对address进行排序
 	List4AddressOrder := make([]string, 0)
 	for address, orderInstance := range OrderInstanceMap {
 		orderInstance.computeVariance()
 		List4AddressOrder = append(List4AddressOrder, address)
 	}
-	fmt.Print("compute var:")
-	fmt.Println(time.Since(startTime))
-	startTime = time.Now()
 	// 冒泡排序, List4Address里的顺序就是最后Address的顺序
-	fmt.Println(len(List4AddressOrder))
-	AddressSortFlag := true
-	for i := 0; i < len(List4AddressOrder)-1; i++ {
-		AddressSortFlag = true
-		// 方差倒排，在方差一样的基础上看谁的instance多
-		for j := 0; j < len(List4AddressOrder)-i-1; j++ {
-			if OrderInstanceMap[List4AddressOrder[j]].variance < OrderInstanceMap[List4AddressOrder[j+1]].variance {
-				List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
-				AddressSortFlag = false
-			} else if OrderInstanceMap[List4AddressOrder[j]].variance == OrderInstanceMap[List4AddressOrder[j+1]].variance {
-				if len(OrderInstanceMap[List4AddressOrder[j]].instances) < len(OrderInstanceMap[List4AddressOrder[i]].instances) {
-					List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
-					AddressSortFlag = false
-				}
-			}
-		}
-		if AddressSortFlag {
-			break
-		}
-	}
+	//AddressSortFlag := true
+	//for i := 0; i < len(List4AddressOrder)-1; i++ {
+	//	AddressSortFlag = true
+	//	// 方差倒排，在方差一样的基础上看谁的instance多
+	//	for j := 0; j < len(List4AddressOrder)-i-1; j++ {
+	//		if OrderInstanceMap[List4AddressOrder[j]].variance < OrderInstanceMap[List4AddressOrder[j+1]].variance {
+	//			List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
+	//			AddressSortFlag = false
+	//		} else if OrderInstanceMap[List4AddressOrder[j]].variance == OrderInstanceMap[List4AddressOrder[j+1]].variance {
+	//			if len(OrderInstanceMap[List4AddressOrder[j]].instances) < len(OrderInstanceMap[List4AddressOrder[i]].instances) {
+	//				List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
+	//				AddressSortFlag = false
+	//			}
+	//		}
+	//	}
+	//	if AddressSortFlag {
+	//		break
+	//	}
+	//}
 	fmt.Print("address sort:")
 	fmt.Println(time.Since(startTime))
 	startTime = time.Now()
