@@ -271,7 +271,7 @@ func NewSmallbank(path string, saving []string, savingAmount []int, checking []s
 	s := &Smallbank{
 		savings:   saving,
 		checkings: checking,
-		pubicKey:  publicKey,
+		publicKey: publicKey,
 		hashed:    hashed,
 		signature: signature,
 	}
