@@ -411,6 +411,7 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 	fmt.Println(time.Since(startTime))
 	startTime = time.Now()
 	// 冒泡排序, List4Address里的顺序就是最后Address的顺序
+	fmt.Println(len(List4AddressOrder))
 	AddressSortFlag := true
 	for i := 0; i < len(List4AddressOrder)-1; i++ {
 		AddressSortFlag = true
