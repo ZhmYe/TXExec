@@ -611,7 +611,7 @@ func (peer *Peer) checkComplete() bool {
 }
 func (peer *Peer) execInSequentialImpl(blocks []Block) {
 	for _, block := range blocks {
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(time.Duration(10) * time.Millisecond)
 		for _, tx := range block.txs {
 			switch tx.txType {
 			case transactSavings:
