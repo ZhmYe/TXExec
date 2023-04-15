@@ -628,7 +628,7 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 		//time.Sleep(time.Duration(10) * time.Millisecond)
 		//fmt.Println(len(block.txs))
 		for _, tx := range block.txs {
-			fmt.Println("start verify...")
+			//fmt.Println("start verify...")
 			//startTime := time.Now()
 			//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
 			//if err != nil {
