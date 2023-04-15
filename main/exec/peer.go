@@ -398,12 +398,18 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 			DAG[i][j] = 0
 		}
 	}
+	fmt.Print("get address:")
+	fmt.Println(time.Since(startTime))
+	startTime = time.Now()
 	// 计算方差并对address进行排序
 	List4AddressOrder := make([]string, 0)
 	for address, orderInstance := range OrderInstanceMap {
 		orderInstance.computeVariance()
 		List4AddressOrder = append(List4AddressOrder, address)
 	}
+	fmt.Print("compute var:")
+	fmt.Println(time.Since(startTime))
+	startTime = time.Now()
 	// 冒泡排序, List4Address里的顺序就是最后Address的顺序
 	AddressSortFlag := true
 	for i := 0; i < len(List4AddressOrder)-1; i++ {
