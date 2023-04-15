@@ -627,6 +627,7 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 	for _, block := range blocks {
 		//time.Sleep(time.Duration(10) * time.Millisecond)
 		for _, tx := range block.txs {
+			startTime := time.Now()
 			switch tx.txType {
 			case transactSavings:
 				readOp := tx.Ops[0]
@@ -678,6 +679,7 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 				writeResultChecking := readResultSaving + readResultChecking
 				tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
 				peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
+				fmt.Println(time.Since(startTime))
 			}
 		}
 	}
@@ -727,10 +729,9 @@ func (peer *Peer) runInSequential() {
 		}
 		if peer.checkComplete() {
 			peer.log(peer.RecordLog())
-			fmt.Println(peer.RecordLog())
-			startTime := time.Now()
+			//startTime := time.Now()
 			peer.execInSequential()
-			fmt.Println(time.Since(startTime))
+			//fmt.Println(time.Since(startTime))
 		}
 	}
 }
