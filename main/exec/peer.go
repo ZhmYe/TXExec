@@ -626,7 +626,7 @@ func (peer *Peer) checkComplete() bool {
 func (peer *Peer) execInSequentialImpl(blocks []Block) {
 	for _, block := range blocks {
 		//time.Sleep(time.Duration(10) * time.Millisecond)
-		fmt.Println(len(block.txs))
+		//fmt.Println(len(block.txs))
 		for _, tx := range block.txs {
 			startTime := time.Now()
 			switch tx.txType {
@@ -680,8 +680,8 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 				writeResultChecking := readResultSaving + readResultChecking
 				tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
 				peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
-				fmt.Println(time.Since(startTime))
 			}
+			fmt.Println(time.Since(startTime))
 		}
 	}
 }
