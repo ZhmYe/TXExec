@@ -432,29 +432,29 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 	//fmt.Println(time.Since(startTime))
 	//startTime = time.Now()
 	// 根据排好序的address，得到其对应的instances的顺序，放入有向图中
-	for _, address := range List4AddressOrder {
-		tmpOrderInstance := OrderInstanceMap[address]
-		result := tmpOrderInstance.getOrder()
-		// 按序检测该结果是否与之前有冲突，如果有，将该元素删除
-		validResult := make([]int, 0)
-		for i, element := range result {
-			valid := true
-			for j := i + 1; j < len(result); j++ {
-				// 如果与之前的顺序冲突
-				if DAG[instanceDict[result[j]]][instanceDict[result[i]]] == 1 {
-					valid = false
-					break
-				}
-			}
-			if valid {
-				validResult = append(validResult, instanceDict[element])
-			}
-		}
-		// 将新加入的顺序更新到DAG中
-		for i := 0; i < len(validResult)-1; i++ {
-			DAG[validResult[i]][validResult[i+1]] = 1
-		}
-	}
+	//for _, address := range List4AddressOrder {
+	//	tmpOrderInstance := OrderInstanceMap[address]
+	//	result := tmpOrderInstance.getOrder()
+	//	// 按序检测该结果是否与之前有冲突，如果有，将该元素删除
+	//	validResult := make([]int, 0)
+	//	for i, element := range result {
+	//		valid := true
+	//		for j := i + 1; j < len(result); j++ {
+	//			// 如果与之前的顺序冲突
+	//			if DAG[instanceDict[result[j]]][instanceDict[result[i]]] == 1 {
+	//				valid = false
+	//				break
+	//			}
+	//		}
+	//		if valid {
+	//			validResult = append(validResult, instanceDict[element])
+	//		}
+	//	}
+	//	// 将新加入的顺序更新到DAG中
+	//	for i := 0; i < len(validResult)-1; i++ {
+	//		DAG[validResult[i]][validResult[i+1]] = 1
+	//	}
+	//}
 	//var execWg sync.WaitGroup
 	//execWg.Add(len(OrderInstanceMap))
 	topologicalOrder := TopologicalOrder(DAG)
