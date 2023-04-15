@@ -690,6 +690,7 @@ func (peer *Peer) execInSequential() {
 		block := record.blocks[record.index]
 		blocks = append(blocks, block)
 	}
+	fmt.Print(len(blocks))
 	// 执行交易
 	peer.execInSequentialImpl(blocks)
 	//peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
