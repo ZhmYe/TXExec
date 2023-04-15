@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -181,9 +180,11 @@ func (peer *Peer) exec(epoch map[int]int) {
 
 // execInParalleling 并行执行不同Instance中的区块
 func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
+	if peer.id != 1 {
+		return
+	}
 	var wg sync.WaitGroup
 	wg.Add(len(ExecBlocks))
-	fmt.Println(runtime.NumGoroutine())
 	for _, blocks := range ExecBlocks {
 		tmpBlocks := blocks
 		//tmpBuffer := buffer
@@ -198,13 +199,13 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					tmpTx := transaction
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
-						//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+						defer wg4tx.Done()
+						err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
 						////fmt.Print("very time:")
 						////fmt.Println(time.Since(startTime))
-						//if err != nil {
-						//	panic(err)
-						//}
-						defer wg4tx.Done()
+						if err != nil {
+							panic(err)
+						}
 						//switch tx.txType {
 						//case transactSavings:
 						//	readOp := tx.Ops[0]
