@@ -84,7 +84,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []st
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
-	peer.epochTimeout = time.Duration(50) * time.Millisecond
+	peer.epochTimeout = time.Duration(100) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
 	peer.blockTimeStamp = timestamp
@@ -520,9 +520,9 @@ func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 // 更新出块timeout
 func (peer *Peer) getNewBlockTimeout() {
 	if peer.id != 3 {
-		peer.blockTimeout = time.Duration(50) * time.Millisecond
+		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	} else {
-		peer.blockTimeout = time.Duration(150) * time.Millisecond
+		peer.blockTimeout = time.Duration(200) * time.Millisecond
 	}
 	peer.blockTimeStamp = time.Now()
 }
