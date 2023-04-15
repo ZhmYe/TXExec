@@ -526,7 +526,7 @@ func (peer *Peer) getNewBlockTimeout() {
 	if peer.id != 3 {
 		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	} else {
-		peer.blockTimeout = time.Duration(100) * time.Millisecond
+		peer.blockTimeout = time.Duration(400) * time.Millisecond
 	}
 	peer.blockTimeStamp = time.Now()
 }
@@ -712,24 +712,159 @@ func (peer *Peer) execInSequential() {
 	//peer.NotExecBlockIndex += epoch[peer.id]
 }
 
-//func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
-//		for
-//	}
-//func (peer *Peer) execInDoubleDetect() {
-//	blocks := make([]Block, 0)
-//	for _, record := range peer.record {
-//		block := record.blocks[record.index]
-//		blocks = append(blocks, block)
-//	}
-//	// 执行交易
-//	peer.execInDoubleDetectImpl(blocks)
-//	for _, id := range peer.peersIds {
-//		record4id := peer.record[id]
-//		record4id.index += 1
-//		peer.record[id] = record4id
-//	}
-//	//peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
-//}
+func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
+	if peer.id != 0 {
+		return
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(blocks))
+	for _, block := range blocks {
+		tmpTxs := block.txs
+		go func(txs []*Tx, wg *sync.WaitGroup) {
+			defer wg.Done()
+			var wg4tx sync.WaitGroup
+			wg4tx.Add(len(txs))
+			for _, tx := range txs {
+				tmpTx := tx
+				go func(tx *Tx, wg4tx *sync.WaitGroup) {
+					defer wg4tx.Done()
+					err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+					////fmt.Print("very time:")
+					////fmt.Println(time.Since(startTime))
+					if err != nil {
+						panic(err)
+					}
+					switch tx.txType {
+					case transactSavings:
+						readOp := tx.Ops[0]
+						writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+						WriteResult := readResult + writeValue
+						tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+						//buffer[readOp.Key] = WriteResult
+					case depositChecking:
+						readOp := tx.Ops[0]
+						writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+						WriteResult := readResult + writeValue
+						tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+					case sendPayment:
+						readOpA := tx.Ops[0]
+						readOpB := tx.Ops[1]
+						writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+						writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+						readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+						readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
+						WriteResultA := readResultA + writeValueA
+						WriteResultB := readResultB + writeValueB
+						tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+						tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+					case writeCheck:
+						readOp := tx.Ops[0]
+						writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+						WriteResult := readResult + writeValue
+						tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+					case query:
+						readOpSaving := tx.Ops[0]
+						readOpChecking := tx.Ops[1]
+						peer.smallBank.Read(readOpSaving.Key)
+						peer.smallBank.Read(readOpChecking.Key)
+					case amalgamate:
+						readOpSaving := tx.Ops[0]
+						readOpChecking := tx.Ops[1]
+						readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+						WriteResultSaving := 0
+						tx.Ops[2].Val = strconv.Itoa(WriteResultSaving)
+						readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+						writeResultChecking := readResultSaving + readResultChecking
+						tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+					}
+				}(tmpTx, &wg4tx)
+			}
+		}(tmpTxs, &wg)
+	}
+}
+func (peer *Peer) DoubleDetectConflict(blocks []Block) {
+	AllTx := make([]*Tx, 0)
+	for _, block := range blocks {
+		AllTx = append(AllTx, block.txs...)
+	}
+	for i := 0; i < len(AllTx); i++ {
+		txA := AllTx[i]
+		if txA.abort {
+			continue
+		}
+		for j := i + 1; j < len(AllTx); j++ {
+			txB := AllTx[j]
+			if txB.abort {
+				continue
+			}
+			ReadA := make(map[string]bool)
+			WriteA := make(map[string]bool)
+			for _, op := range txA.Ops {
+				if op.Type == OpRead {
+					_, exist := ReadA[op.Key]
+					if !exist {
+						ReadA[op.Key] = true
+					}
+				} else {
+					_, exist := WriteA[op.Key]
+					if !exist {
+						WriteA[op.Key] = true
+					}
+				}
+			}
+			conflictFlag4RW := false
+			conflictFlag4WR := false
+			for _, op := range txB.Ops {
+				if op.Type == OpRead {
+					_, conflict := WriteA[op.Key]
+					if conflict {
+						conflictFlag4RW = true
+					}
+				} else {
+					_, conflict := ReadA[op.Key]
+					if conflict {
+						conflictFlag4WR = true
+					}
+				}
+			}
+			if conflictFlag4RW && conflictFlag4WR {
+				txB.abort = true
+			}
+		}
+	}
+}
+func (peer *Peer) execInDoubleDetect() {
+	blocks := make([]Block, 0)
+	for _, record := range peer.record {
+		block := record.blocks[record.index]
+		blocks = append(blocks, block)
+	}
+	// 执行交易
+	peer.execInDoubleDetectImpl(blocks)
+	peer.DoubleDetectConflict(blocks)
+	for _, id := range peer.peersIds {
+		record4id := peer.record[id]
+		record4id.index += 1
+		peer.record[id] = record4id
+	}
+	//peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
+}
+func (peer *Peer) runInParalleling() {
+	for {
+		if peer.state == Dead {
+			break
+		}
+		if peer.checkComplete() {
+			peer.log(peer.RecordLog())
+			//startTime := time.Now()
+			peer.execInDoubleDetect()
+			//fmt.Println(time.Since(startTime))
+		}
+	}
+}
 
 // 启动节点 Sequential模式
 func (peer *Peer) runInSequential() {
@@ -766,6 +901,8 @@ func (peer *Peer) start() {
 		peer.run()
 	case Sequential:
 		peer.runInSequential()
+	case Paralleling:
+		peer.runInParalleling()
 	}
 
 }
