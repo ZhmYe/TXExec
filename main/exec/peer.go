@@ -624,9 +624,9 @@ func (peer *Peer) checkComplete() bool {
 	return flag
 }
 func (peer *Peer) execInSequentialImpl(blocks []Block) {
-	fmt.Println(len(blocks))
 	for _, block := range blocks {
 		//time.Sleep(time.Duration(10) * time.Millisecond)
+		fmt.Println(len(block.txs))
 		for _, tx := range block.txs {
 			startTime := time.Now()
 			switch tx.txType {
