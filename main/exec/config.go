@@ -39,7 +39,7 @@ var config = Config{
 	ConflictMode:         false,
 	InstanceConflictRate: 0.2,
 	HotKey:               0.2,
-	HotKeyRate:           0.4,
+	HotKeyRate:           0.8,
 	StdDiff:              10000.0,
 	PeerNumber:           4,
 	execTimeout:          time.Duration(1) * time.Minute,
