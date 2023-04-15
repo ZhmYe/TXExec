@@ -162,11 +162,11 @@ func (peer *Peer) exec(epoch map[int]int) {
 			instances = append(instances, *instance)
 		}
 		peer.execInParalleling(execBlocks)
-		fmt.Print("exec time:")
-		fmt.Println(time.Since(startTime))
+		//fmt.Print("exec time:")
+		//fmt.Println(time.Since(startTime))
 		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
-		fmt.Println(time.Since(startTime))
+		//fmt.Println(time.Since(startTime))
 		peer.mu.Lock()
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
@@ -205,10 +205,10 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					tmpTx := transaction
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
-						startTime := time.Now()
+						//startTime := time.Now()
 						err := rsa.VerifyPKCS1v15(tmpTx.publicKey, crypto.SHA256, tmpTx.hashed[:], tmpTx.signature)
-						fmt.Print("very time:")
-						fmt.Println(time.Since(startTime))
+						//fmt.Print("very time:")
+						//fmt.Println(time.Since(startTime))
 						if err != nil {
 							panic(err)
 						}
