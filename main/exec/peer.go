@@ -526,7 +526,7 @@ func (peer *Peer) getNewBlockTimeout() {
 	if peer.id != 3 {
 		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	} else {
-		peer.blockTimeout = time.Duration(400) * time.Millisecond
+		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	}
 	peer.blockTimeStamp = time.Now()
 }
@@ -712,7 +712,7 @@ func (peer *Peer) execInSequential() {
 	//peer.NotExecBlockIndex += epoch[peer.id]
 }
 
-//	func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
+//func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
 //		for
 //	}
 //func (peer *Peer) execInDoubleDetect() {
