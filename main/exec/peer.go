@@ -188,7 +188,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 	//	tmpResult, _ := strconv.Atoi(smallbank.Read(address))
 	//	buffer[address] = tmpResult
 	//}
-	time.Sleep(time.Duration(10) * time.Millisecond)
+	//time.Sleep(time.Duration(10) * time.Millisecond)
 	for _, blocks := range ExecBlocks {
 		tmpBlocks := blocks
 		//tmpBuffer := buffer
@@ -332,7 +332,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 								//}
 								//readResultChecking, exist := buffer.Load(readOpChecking.Key)
 								//if !exist {
-									readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+								readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
 								//}
 								writeResultSaving := 0
 								tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
@@ -698,24 +698,25 @@ func (peer *Peer) execInSequential() {
 	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
 	//peer.NotExecBlockIndex += epoch[peer.id]
 }
-func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
-	for
-}
-func (peer *Peer) execInDoubleDetect() {
-	blocks := make([]Block, 0)
-	for _, record := range peer.record {
-		block := record.blocks[record.index]
-		blocks = append(blocks, block)
-	}
-	// 执行交易
-	peer.execInDoubleDetectImpl(blocks)
-	for _, id := range peer.peersIds {
-		record4id := peer.record[id]
-		record4id.index += 1
-		peer.record[id] = record4id
-	}
-	//peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
-}
+
+//	func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
+//		for
+//	}
+//func (peer *Peer) execInDoubleDetect() {
+//	blocks := make([]Block, 0)
+//	for _, record := range peer.record {
+//		block := record.blocks[record.index]
+//		blocks = append(blocks, block)
+//	}
+//	// 执行交易
+//	peer.execInDoubleDetectImpl(blocks)
+//	for _, id := range peer.peersIds {
+//		record4id := peer.record[id]
+//		record4id.index += 1
+//		peer.record[id] = record4id
+//	}
+//	//peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
+//}
 
 // 启动节点 Sequential模式
 func (peer *Peer) runInSequential() {
