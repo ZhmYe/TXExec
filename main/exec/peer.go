@@ -180,7 +180,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 
 // execInParalleling 并行执行不同Instance中的区块
 func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
-	if peer.id != 1 {
+	if peer.state != Monitor {
 		return
 	}
 	var wg sync.WaitGroup
