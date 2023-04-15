@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/syndtr/goleveldb/leveldb"
 	"math/rand"
@@ -227,6 +228,7 @@ func (s *Smallbank) GenTxSet(n int) []*Tx {
 	for i := range txs {
 		txs[i] = s.GetRandomTx()
 	}
+	fmt.Println(111)
 	return txs
 }
 
