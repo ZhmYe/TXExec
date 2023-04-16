@@ -508,7 +508,10 @@ func (peer *Peer) RecordLog() string {
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
 	//fmt.Println(peer.RecordLog())
-	return len(peer.record[id].blocks) - peer.record[id].index
+	peer.mu.Lock()
+	defer peer.mu.Unlock()
+	record := peer.record[id]
+	return len(record.blocks) - record.index
 }
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
