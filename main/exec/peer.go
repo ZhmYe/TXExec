@@ -898,8 +898,8 @@ func (peer *Peer) start() {
 	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	peer.log(peer.string())
 	go func(peer *Peer) {
+		blockFlag := 100
 		for {
-			blockFlag := 100
 			if peer.state == Dead {
 				break
 			}
