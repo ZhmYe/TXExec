@@ -59,7 +59,7 @@ func PeerInit() {
 	saving, savingAmount := GenSaving(config.OriginKeys)
 	checking, checkingAmount := GenChecking(config.OriginKeys)
 	var peer = newPeer(peerId[0], Monitor, timestamp, peerId, saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
-	peer.start()
+	go peer.start()
 	//for i, id := range peerId {
 	//	var state = Normal
 	//	if !flag && rand.Intn(config.PeerNumber) == 1 {
