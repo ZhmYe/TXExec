@@ -572,9 +572,10 @@ func (peer *Peer) run() {
 		if peer.state == Dead {
 			break
 		}
-		fmt.Println(111)
 		if peer.state == Monitor {
+			fmt.Println(111)
 			if peer.checkEpochTimeout() {
+				fmt.Println(222)
 				peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
