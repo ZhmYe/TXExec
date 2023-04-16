@@ -559,7 +559,7 @@ func (peer *Peer) BlockOut(flag int) {
 	//for _, eachPeer := range peerMap {
 	//eachPeer.AppendBlockToRecord(peer.id, *newBlock)
 	//}
-	peer.log(peer.string())
+	//peer.log(peer.string())
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
@@ -577,7 +577,7 @@ func (peer *Peer) run() {
 				peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
-				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
+				//peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				total := 0
 				//time.Sleep(time.Duration(100) * time.Millisecond) // 得到实时树高耗时
 				for _, id := range peer.peersIds {
@@ -610,8 +610,8 @@ func (peer *Peer) run() {
 					}
 				}
 				//time.Sleep(time.Duration(100) * time.Millisecond) // 告诉其它节点epoch节点耗时
-				var wg sync.WaitGroup
-				wg.Add(len(peer.peersIds))
+				//var wg sync.WaitGroup
+				//wg.Add(len(peer.peersIds))
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				peer.exec(heightMap)
 				//for _, eachPeer := range peerMap {
@@ -622,7 +622,7 @@ func (peer *Peer) run() {
 				//	}(tmp, &wg)
 				//	//eachPeer.exec(heightMap)
 				//}
-				wg.Wait()
+				//wg.Wait()
 
 			}
 		}
