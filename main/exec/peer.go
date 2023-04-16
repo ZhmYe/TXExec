@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
+
 	//"os"
 	"strconv"
 	"sync"
@@ -490,18 +492,18 @@ func (peer *Peer) RecordLog() string {
 	return result
 }
 
-//func (peer *Peer) log(content string) {
-//	//var content = "(Log)" + peer.string()
-//	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	defer file.Close()
-//	_, err = file.WriteString(content + "\n")
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//}
+func (peer *Peer) log(content string) {
+	//var content = "(Log)" + peer.string()
+	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+	_, err = file.WriteString(content + "\n")
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
