@@ -507,11 +507,11 @@ func (peer *Peer) getBlockHeight(id int) int {
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
 func (peer *Peer) AppendBlockToRecord(id int, block Block) {
-	peer.mu.Lock()
+	//peer.mu.Lock()
 	record4id := peer.record[id]
 	record4id.appendBlock(block)
 	peer.record[id] = record4id
-	peer.mu.Unlock()
+	//peer.mu.Unlock()
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
 	record4id := peer.record[id]
