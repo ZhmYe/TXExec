@@ -501,7 +501,7 @@ func (peer *Peer) log(content string) {
 
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
-	fmt.Println(peer.RecordLog())
+	//fmt.Println(peer.RecordLog())
 	return len(peer.record[id].blocks) - peer.record[id].index
 }
 
@@ -582,7 +582,7 @@ func (peer *Peer) run() {
 				//time.Sleep(time.Duration(100) * time.Millisecond) // 得到实时树高耗时
 				for _, id := range peer.peersIds {
 					var height = peer.sendCheckBlockHeight(id)
-					fmt.Println(height)
+					//fmt.Println(height)
 					if height == 0 {
 						continue
 					}
