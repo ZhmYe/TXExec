@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
+	//"os"
 	"strconv"
 	"sync"
 	"time"
@@ -145,7 +145,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println("exec start...")
-	startTime := time.Now()
+	//startTime := time.Now()
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
 		execBlocks := make(map[int][]Block, 0)
@@ -162,12 +162,12 @@ func (peer *Peer) exec(epoch map[int]int) {
 			instances = append(instances, *instance)
 		}
 		peer.execInParalleling(execBlocks)
-		fmt.Print("exec time:")
-		fmt.Print(time.Since(startTime))
-		startTime = time.Now()
+		//fmt.Print("exec time:")
+		//fmt.Print(time.Since(startTime))
+		//startTime = time.Now()
 		peer.OperationAfterExecution(instances)
-		fmt.Print(" abort time:")
-		fmt.Print(time.Since(startTime))
+		//fmt.Print(" abort time:")
+		//fmt.Print(time.Since(startTime))
 		peer.mu.Lock()
 		tmpSum := 0
 		for _, id := range peer.peersIds {
@@ -176,8 +176,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 			tmpSum += epoch[id]
 			peer.record[id] = record4id
 		}
-		fmt.Print("total block:")
-		fmt.Println(tmpSum)
+		//fmt.Print("total block:")
+		//fmt.Println(tmpSum)
 		peer.mu.Unlock()
 	}
 
@@ -492,22 +492,23 @@ func (peer *Peer) RecordLog() string {
 	return result
 }
 
-func (peer *Peer) log(content string) {
-	//var content = "(Log)" + peer.string()
-	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-	_, err = file.WriteString(content + "\n")
-	if err != nil {
-		fmt.Println(err)
-	}
-}
+//func (peer *Peer) log(content string) {
+//	//var content = "(Log)" + peer.string()
+//	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	defer file.Close()
+//	_, err = file.WriteString(content + "\n")
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//}
 
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
-	return len(peer.record[peer.id].blocks) - peer.record[peer.id].index
+	//fmt.Println(peer.RecordLog())
+	return len(peer.record[id].blocks) - peer.record[id].index
 }
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
@@ -517,6 +518,11 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	record4id.appendBlock(block)
 	peer.record[id] = record4id
 	peer.mu.Unlock()
+}
+func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
+	record4id := peer.record[id]
+	record4id.index += bias
+	peer.record[id] = record4id
 }
 
 // 更新出块timeout
@@ -550,7 +556,7 @@ func (peer *Peer) BlockOut(flag int) {
 			peer.AppendBlockToRecord(i, *newBlock)
 		}
 	}
-	if flag%4 == 0 {
+	if flag%400 == 0 {
 		var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 		//peer.log("generate tx:" + strconv.Itoa(len(tx)))
 		newBlock := NewBlock(tx)
@@ -574,6 +580,7 @@ func (peer *Peer) run() {
 		}
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
+				//peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
 				//peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
@@ -608,7 +615,20 @@ func (peer *Peer) run() {
 						}
 					}
 				}
+				//time.Sleep(time.Duration(100) * time.Millisecond) // 告诉其它节点epoch节点耗时
+				//var wg sync.WaitGroup
+				//wg.Add(len(peer.peersIds))
+				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				peer.exec(heightMap)
+				//for _, eachPeer := range peerMap {
+				//	tmp := eachPeer
+				//	go func(tmp *Peer, wg *sync.WaitGroup) {
+				//		defer wg.Done()
+				//		tmp.exec(heightMap)
+				//	}(tmp, &wg)
+				//	//eachPeer.exec(heightMap)
+				//}
+				//wg.Wait()
 
 			}
 		}
@@ -702,7 +722,6 @@ func (peer *Peer) execInSequential() {
 	// 执行交易
 	peer.execInSequentialImpl(blocks)
 	//peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
-	peer.mu.Lock()
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
 		record4id.index += 1
@@ -710,7 +729,165 @@ func (peer *Peer) execInSequential() {
 	}
 	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
 	//peer.NotExecBlockIndex += epoch[peer.id]
-	peer.mu.Unlock()
+}
+
+func (peer *Peer) execInDoubleDetectImpl(blocks []Block) {
+	if peer.id != 0 {
+		return
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(blocks))
+	for _, block := range blocks {
+		tmpTxs := block.txs
+		go func(txs []*Tx, wg *sync.WaitGroup) {
+			defer wg.Done()
+			var wg4tx sync.WaitGroup
+			wg4tx.Add(len(txs))
+			for _, tx := range txs {
+				tmpTx := tx
+				go func(tx *Tx, wg4tx *sync.WaitGroup) {
+					defer wg4tx.Done()
+					err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+					////fmt.Print("very time:")
+					////fmt.Println(time.Since(startTime))
+					if err != nil {
+						panic(err)
+					}
+					switch tx.txType {
+					case transactSavings:
+						readOp := tx.Ops[0]
+						writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+						WriteResult := readResult + writeValue
+						tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+						//buffer[readOp.Key] = WriteResult
+					case depositChecking:
+						readOp := tx.Ops[0]
+						writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+						WriteResult := readResult + writeValue
+						tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+					case sendPayment:
+						readOpA := tx.Ops[0]
+						readOpB := tx.Ops[1]
+						writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+						writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+						readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+						readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
+						WriteResultA := readResultA + writeValueA
+						WriteResultB := readResultB + writeValueB
+						tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+						tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+					case writeCheck:
+						readOp := tx.Ops[0]
+						writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+						readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+						WriteResult := readResult + writeValue
+						tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+					case query:
+						readOpSaving := tx.Ops[0]
+						readOpChecking := tx.Ops[1]
+						peer.smallBank.Read(readOpSaving.Key)
+						peer.smallBank.Read(readOpChecking.Key)
+					case amalgamate:
+						readOpSaving := tx.Ops[0]
+						readOpChecking := tx.Ops[1]
+						readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+						WriteResultSaving := 0
+						tx.Ops[2].Val = strconv.Itoa(WriteResultSaving)
+						readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+						writeResultChecking := readResultSaving + readResultChecking
+						tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+					}
+				}(tmpTx, &wg4tx)
+			}
+		}(tmpTxs, &wg)
+	}
+}
+func (peer *Peer) DoubleDetectConflict(blocks []Block) {
+	AllTx := make([]*Tx, 0)
+	DAG := make([][]int, len(AllTx)) // 有向图邻接矩阵
+	for i := range DAG {
+		DAG[i] = make([]int, len(AllTx))
+		for j := range DAG[i] {
+			DAG[i][j] = 0
+		}
+	}
+	for _, block := range blocks {
+		AllTx = append(AllTx, block.txs...)
+	}
+	for i := 0; i < len(AllTx); i++ {
+		txA := AllTx[i]
+		if txA.abort {
+			continue
+		}
+		for j := i + 1; j < len(AllTx); j++ {
+			txB := AllTx[j]
+			if txB.abort {
+				continue
+			}
+			ReadA := make(map[string]bool)
+			WriteA := make(map[string]bool)
+			for _, op := range txA.Ops {
+				if op.Type == OpRead {
+					_, exist := ReadA[op.Key]
+					if !exist {
+						ReadA[op.Key] = true
+					}
+				} else {
+					_, exist := WriteA[op.Key]
+					if !exist {
+						WriteA[op.Key] = true
+					}
+				}
+			}
+			for _, op := range txB.Ops {
+				if op.Type == OpRead {
+					_, conflict := WriteA[op.Key]
+					if conflict {
+						txB.abort = true
+						//conflictFlag4RW = true
+						//DAG[i][j] = 1
+					}
+				} else {
+					_, conflict := ReadA[op.Key]
+					if conflict {
+						txB.abort = true
+						//DAG[j][i] = 1
+					}
+				}
+			}
+		}
+	}
+}
+func (peer *Peer) execInDoubleDetect() {
+	blocks := make([]Block, 0)
+	for _, record := range peer.record {
+		block := record.blocks[record.index]
+		blocks = append(blocks, block)
+	}
+	// 执行交易
+	peer.execInDoubleDetectImpl(blocks)
+	peer.DoubleDetectConflict(blocks)
+	for _, id := range peer.peersIds {
+		record4id := peer.record[id]
+		record4id.index += 1
+		peer.record[id] = record4id
+	}
+	//peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
+}
+func (peer *Peer) runInParalleling() {
+	for {
+		if peer.state == Dead {
+			break
+		}
+		if peer.checkComplete() {
+			//peer.log(peer.RecordLog())
+			//startTime := time.Now()
+			peer.execInDoubleDetect()
+			//fmt.Println(time.Since(startTime))
+		}
+	}
 }
 
 // 启动节点 Sequential模式
@@ -721,9 +898,9 @@ func (peer *Peer) runInSequential() {
 		}
 		if peer.checkComplete() {
 			//peer.log(peer.RecordLog())
-			//startTime := time.Now()
+			startTime := time.Now()
 			peer.execInSequential()
-			//fmt.Println(time.Since(startTime))
+			fmt.Println(time.Since(startTime))
 		}
 	}
 }
@@ -732,14 +909,14 @@ func (peer *Peer) start() {
 	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	//peer.log(peer.string())
 	go func(peer *Peer) {
-		blockFlag := 1
+		blockFlag := 100
 		for {
 			if peer.state == Dead {
 				break
 			}
 			if peer.checkBlockTimeout() {
 				peer.BlockOut(blockFlag)
-				blockFlag += 1
+				blockFlag += 100
 				peer.getNewBlockTimeout()
 			}
 			//time.Sleep(time.Duration(100) * time.Millisecond)
@@ -750,15 +927,17 @@ func (peer *Peer) start() {
 		peer.run()
 	case Sequential:
 		peer.runInSequential()
-		//case Paralleling:
-		//	peer.runInParalleling()
+	case Paralleling:
+		peer.runInParalleling()
 	}
 
 }
 
 // 停止节点
 func (peer *Peer) stop() {
+	peer.mu.Lock()
 	peer.state = Dead
 	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
+	peer.mu.Unlock()
 }
