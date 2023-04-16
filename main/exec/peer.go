@@ -572,6 +572,7 @@ func (peer *Peer) run() {
 		if peer.state == Dead {
 			break
 		}
+		fmt.Println(111)
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
 				peer.log(peer.RecordLog())
