@@ -588,6 +588,9 @@ func (peer *Peer) run() {
 					heightMap[id] = height
 					total += height
 				}
+				if total == 0 {
+					continue
+				}
 				if total > 10 {
 					for id, height := range heightMap {
 						if height == 0 {
