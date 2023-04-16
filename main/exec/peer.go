@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
+	//"os"
 	"strconv"
 	"sync"
 	"time"
@@ -491,18 +491,19 @@ func (peer *Peer) RecordLog() string {
 	}
 	return result
 }
-func (peer *Peer) log(content string) {
-	//var content = "(Log)" + peer.string()
-	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-	_, err = file.WriteString(content + "\n")
-	if err != nil {
-		fmt.Println(err)
-	}
-}
+
+//func (peer *Peer) log(content string) {
+//	//var content = "(Log)" + peer.string()
+//	file, err := os.OpenFile("log/peer_"+strconv.Itoa(peer.id)+".log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0777))
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	defer file.Close()
+//	_, err = file.WriteString(content + "\n")
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//}
 
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
@@ -579,7 +580,7 @@ func (peer *Peer) run() {
 		}
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
-				peer.log(peer.RecordLog())
+				//peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
 				//peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
@@ -881,7 +882,7 @@ func (peer *Peer) runInParalleling() {
 			break
 		}
 		if peer.checkComplete() {
-			peer.log(peer.RecordLog())
+			//peer.log(peer.RecordLog())
 			//startTime := time.Now()
 			peer.execInDoubleDetect()
 			//fmt.Println(time.Since(startTime))
@@ -896,7 +897,7 @@ func (peer *Peer) runInSequential() {
 			break
 		}
 		if peer.checkComplete() {
-			peer.log(peer.RecordLog())
+			//peer.log(peer.RecordLog())
 			startTime := time.Now()
 			peer.execInSequential()
 			fmt.Println(time.Since(startTime))
@@ -905,8 +906,8 @@ func (peer *Peer) runInSequential() {
 }
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
-	peer.log(peer.string())
+	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
+	//peer.log(peer.string())
 	go func(peer *Peer) {
 		blockFlag := 100
 		for {
@@ -936,7 +937,7 @@ func (peer *Peer) start() {
 func (peer *Peer) stop() {
 	peer.mu.Lock()
 	peer.state = Dead
-	peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
+	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	peer.mu.Unlock()
 }
