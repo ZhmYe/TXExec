@@ -573,7 +573,7 @@ func (peer *Peer) runInParalleling() {
 		}
 		if peer.state == Monitor {
 			if peer.checkEpochTimeout() {
-				//peer.log(peer.RecordLog())
+				peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
 				//peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
