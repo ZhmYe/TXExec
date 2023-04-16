@@ -45,8 +45,7 @@ func newStatisticalResults(result map[int]*Record) *StatisticalResults {
 func PeerStop(peer *Peer) StatisticalResults {
 	result := make([]map[int]*Record, 0)
 	//for _, peer := range peerMap {
-	peer.stop()
-	//result = append(result, peer.record)
+	result = append(result, peer.record)
 	//}
 
 	return *newStatisticalResults(result[0])
@@ -83,6 +82,7 @@ func PeerInit() {
 	for {
 		totalExecBlockNumber := 0
 		if time.Since(timeStart) >= config.execTimeout {
+			peer.stop()
 			statisticalResults := PeerStop(peer)
 			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index
