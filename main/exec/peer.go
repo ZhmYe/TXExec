@@ -501,6 +501,7 @@ func (peer *Peer) log(content string) {
 
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
+	fmt.Println(peer.RecordLog())
 	return len(peer.record[id].blocks) - peer.record[id].index
 }
 
