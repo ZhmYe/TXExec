@@ -573,12 +573,11 @@ func (peer *Peer) run() {
 			break
 		}
 		if peer.state == Monitor {
-			fmt.Println(111)
 			if peer.checkEpochTimeout() {
-				fmt.Println(222)
 				peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
+				fmt.Println(111)
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				total := 0
 				//time.Sleep(time.Duration(100) * time.Millisecond) // 得到实时树高耗时
