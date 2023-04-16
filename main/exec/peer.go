@@ -510,6 +510,7 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	record4id := peer.record[id]
 	record4id.appendBlock(block)
 	peer.record[id] = record4id
+	fmt.Println(len(peer.record[id].blocks))
 	peer.mu.Unlock()
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
@@ -542,21 +543,19 @@ func (peer *Peer) checkEpochTimeout() bool {
 }
 func (peer *Peer) BlockOut(flag int) {
 	for i, _ := range peer.peersIds {
-		fmt.Println(i)
 		if i != 3 {
 			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 			//peer.log("generate tx:" + strconv.Itoa(len(tx)))
 			newBlock := NewBlock(tx)
 			peer.AppendBlockToRecord(i, *newBlock)
 		}
-		if flag%400 == 0 {
-			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
-			//peer.log("generate tx:" + strconv.Itoa(len(tx)))
-			newBlock := NewBlock(tx)
-			peer.AppendBlockToRecord(peer.peersIds[3], *newBlock)
-		}
 	}
-	//peer.AppendBlockToRecord()
+	if flag%400 == 0 {
+		var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
+		//peer.log("generate tx:" + strconv.Itoa(len(tx)))
+		newBlock := NewBlock(tx)
+		peer.AppendBlockToRecord(peer.peersIds[3], *newBlock)
+	}
 	//for _, eachPeer := range peerMap {
 	//eachPeer.AppendBlockToRecord(peer.id, *newBlock)
 	//}
