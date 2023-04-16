@@ -169,7 +169,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
 		fmt.Print(" abort time:")
-		fmt.Print(time.Since(startTime))
+		fmt.Println(time.Since(startTime))
 		peer.mu.Lock()
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
