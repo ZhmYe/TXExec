@@ -145,7 +145,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println("exec start...")
-	startTime := time.Now()
+	//startTime := time.Now()
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
 		execBlocks := make(map[int][]Block, 0)
@@ -162,12 +162,12 @@ func (peer *Peer) exec(epoch map[int]int) {
 			instances = append(instances, *instance)
 		}
 		peer.execInParalleling(execBlocks)
-		fmt.Print("exec time:")
-		fmt.Print(time.Since(startTime))
-		startTime = time.Now()
+		//fmt.Print("exec time:")
+		//fmt.Print(time.Since(startTime))
+		//startTime = time.Now()
 		peer.OperationAfterExecution(instances)
-		fmt.Print(" abort time:")
-		fmt.Print(time.Since(startTime))
+		//fmt.Print(" abort time:")
+		//fmt.Print(time.Since(startTime))
 		peer.mu.Lock()
 		tmpSum := 0
 		for _, id := range peer.peersIds {
@@ -176,8 +176,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 			tmpSum += epoch[id]
 			peer.record[id] = record4id
 		}
-		fmt.Print("total block:")
-		fmt.Println(tmpSum)
+		//fmt.Print("total block:")
+		//fmt.Println(tmpSum)
 		peer.mu.Unlock()
 	}
 
@@ -434,29 +434,29 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 	//fmt.Println(time.Since(startTime))
 	//startTime = time.Now()
 	// 根据排好序的address，得到其对应的instances的顺序，放入有向图中
-	//for _, address := range List4AddressOrder {
-	//	tmpOrderInstance := OrderInstanceMap[address]
-	//	result := tmpOrderInstance.getOrder()
-	//	// 按序检测该结果是否与之前有冲突，如果有，将该元素删除
-	//	validResult := make([]int, 0)
-	//	for i, element := range result {
-	//		valid := true
-	//		for j := i + 1; j < len(result); j++ {
-	//			// 如果与之前的顺序冲突
-	//			if DAG[instanceDict[result[j]]][instanceDict[result[i]]] == 1 {
-	//				valid = false
-	//				break
-	//			}
-	//		}
-	//		if valid {
-	//			validResult = append(validResult, instanceDict[element])
-	//		}
-	//	}
-	//	// 将新加入的顺序更新到DAG中
-	//	for i := 0; i < len(validResult)-1; i++ {
-	//		DAG[validResult[i]][validResult[i+1]] = 1
-	//	}
-	//}
+	for _, address := range List4AddressOrder {
+		tmpOrderInstance := OrderInstanceMap[address]
+		result := tmpOrderInstance.getOrder()
+		// 按序检测该结果是否与之前有冲突，如果有，将该元素删除
+		validResult := make([]int, 0)
+		for i, element := range result {
+			valid := true
+			for j := i + 1; j < len(result); j++ {
+				// 如果与之前的顺序冲突
+				if DAG[instanceDict[result[j]]][instanceDict[result[i]]] == 1 {
+					valid = false
+					break
+				}
+			}
+			if valid {
+				validResult = append(validResult, instanceDict[element])
+			}
+		}
+		// 将新加入的顺序更新到DAG中
+		for i := 0; i < len(validResult)-1; i++ {
+			DAG[validResult[i]][validResult[i+1]] = 1
+		}
+	}
 	//var execWg sync.WaitGroup
 	//execWg.Add(len(OrderInstanceMap))
 	topologicalOrder := TopologicalOrder(DAG)
@@ -530,7 +530,7 @@ func (peer *Peer) getNewBlockTimeout() {
 	if peer.id != 3 {
 		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	} else {
-		peer.blockTimeout = time.Duration(100) * time.Millisecond
+		peer.blockTimeout = time.Duration(400) * time.Millisecond
 	}
 	peer.blockTimeStamp = time.Now()
 }
@@ -556,7 +556,7 @@ func (peer *Peer) BlockOut(flag int) {
 			peer.AppendBlockToRecord(i, *newBlock)
 		}
 	}
-	if flag%100 == 0 {
+	if flag%400 == 0 {
 		var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 		//peer.log("generate tx:" + strconv.Itoa(len(tx)))
 		newBlock := NewBlock(tx)
