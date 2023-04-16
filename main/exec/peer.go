@@ -568,7 +568,7 @@ func (peer *Peer) sendCheckBlockHeight(id int) int {
 }
 
 // 启动节点 Mine模式
-func (peer *Peer) run() {
+func (peer *Peer) runInParalleling() {
 	for {
 		if peer.state == Dead {
 			break
@@ -759,8 +759,8 @@ func (peer *Peer) start() {
 		}
 	}(peer)
 	switch config.RunType {
-	case Mine:
-		peer.run()
+	case Paralleling:
+		peer.runInParalleling()
 	case Sequential:
 		peer.runInSequential()
 	}

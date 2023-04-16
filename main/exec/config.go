@@ -10,7 +10,6 @@ type runType int
 const (
 	Sequential runType = iota
 	Paralleling
-	Mine
 )
 
 type Config struct {
@@ -44,5 +43,5 @@ var config = Config{
 	PeerNumber:           4,
 	execTimeout:          time.Duration(1) * time.Minute,
 	execTimeNumber:       60,
-	RunType:              Sequential,
+	RunType:              Paralleling,
 }
