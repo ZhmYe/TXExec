@@ -510,7 +510,6 @@ func (peer *Peer) AppendBlockToRecord(id int, block Block) {
 	record4id := peer.record[id]
 	record4id.appendBlock(block)
 	peer.record[id] = record4id
-	fmt.Println(len(peer.record[id].blocks))
 	peer.mu.Unlock()
 }
 func (peer *Peer) UpdateIndexToRecord(id int, bias int) {
@@ -908,6 +907,7 @@ func (peer *Peer) start() {
 				peer.BlockOut(blockFlag)
 				blockFlag += 100
 				peer.getNewBlockTimeout()
+				fmt.Println(peer.RecordLog())
 			}
 			//time.Sleep(time.Duration(100) * time.Millisecond)
 		}
