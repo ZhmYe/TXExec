@@ -7,8 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-
-	//"os"
 	"strconv"
 	"sync"
 	"time"
@@ -88,7 +86,7 @@ func newPeer(id int, state State, timestamp time.Time, peerId []int, saving []st
 	var peer = new(Peer)
 	peer.id = id
 	peer.state = state
-	peer.epochTimeout = time.Duration(200) * time.Millisecond
+	peer.epochTimeout = time.Duration(100) * time.Millisecond
 	//peer.epochTimeStamp = time.Now()
 	peer.getNewBlockTimeout()
 	peer.blockTimeStamp = timestamp
@@ -509,9 +507,7 @@ func (peer *Peer) log(content string) {
 
 // 获取块高
 func (peer *Peer) getBlockHeight(id int) int {
-	//fmt.Println(peer.RecordLog())
-	record := peer.record[id]
-	return len(record.blocks) - record.index
+	return len(peer.record[peer.id].blocks) - peer.record[peer.id].index
 }
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
@@ -554,7 +550,7 @@ func (peer *Peer) BlockOut(flag int) {
 			peer.AppendBlockToRecord(i, *newBlock)
 		}
 	}
-	if flag%400 == 0 {
+	if flag%4 == 0 {
 		var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 		//peer.log("generate tx:" + strconv.Itoa(len(tx)))
 		newBlock := NewBlock(tx)
@@ -612,20 +608,7 @@ func (peer *Peer) run() {
 						}
 					}
 				}
-				//time.Sleep(time.Duration(100) * time.Millisecond) // 告诉其它节点epoch节点耗时
-				//var wg sync.WaitGroup
-				//wg.Add(len(peer.peersIds))
-				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
 				peer.exec(heightMap)
-				//for _, eachPeer := range peerMap {
-				//	tmp := eachPeer
-				//	go func(tmp *Peer, wg *sync.WaitGroup) {
-				//		defer wg.Done()
-				//		tmp.exec(heightMap)
-				//	}(tmp, &wg)
-				//	//eachPeer.exec(heightMap)
-				//}
-				//wg.Wait()
 
 			}
 		}
@@ -736,9 +719,9 @@ func (peer *Peer) runInSequential() {
 		}
 		if peer.checkComplete() {
 			//peer.log(peer.RecordLog())
-			startTime := time.Now()
+			//startTime := time.Now()
 			peer.execInSequential()
-			fmt.Println(time.Since(startTime))
+			//fmt.Println(time.Since(startTime))
 		}
 	}
 }
@@ -747,14 +730,14 @@ func (peer *Peer) start() {
 	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	//peer.log(peer.string())
 	go func(peer *Peer) {
-		blockFlag := 100
+		blockFlag := 1
 		for {
 			if peer.state == Dead {
 				break
 			}
 			if peer.checkBlockTimeout() {
 				peer.BlockOut(blockFlag)
-				blockFlag += 100
+				blockFlag += 1
 				peer.getNewBlockTimeout()
 			}
 			//time.Sleep(time.Duration(100) * time.Millisecond)
@@ -773,9 +756,7 @@ func (peer *Peer) start() {
 
 // 停止节点
 func (peer *Peer) stop() {
-	peer.mu.Lock()
 	peer.state = Dead
 	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") Dead...")
-	peer.mu.Unlock()
 }
