@@ -541,6 +541,7 @@ func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut(flag int) {
+	fmt.Println("block out..")
 	for i, _ := range peer.peersIds {
 		if i != 3 {
 			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
@@ -577,7 +578,6 @@ func (peer *Peer) run() {
 				peer.log(peer.RecordLog())
 				var heightMap map[int]int
 				heightMap = make(map[int]int)
-				fmt.Println(111)
 				peer.log("Monitor(id:" + strconv.Itoa(peer.id) + "） send message to check block height to peers...")
 				total := 0
 				//time.Sleep(time.Duration(100) * time.Millisecond) // 得到实时树高耗时
