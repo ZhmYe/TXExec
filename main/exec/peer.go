@@ -13,7 +13,7 @@ import (
 )
 
 // PeerMap 所有节点
-var peerMap = make(map[int]*Peer)
+//var peerMap = make(map[int]*Peer)
 
 type State int
 
@@ -111,8 +111,8 @@ func (peer *Peer) string() string {
 	}
 	return "peer: {\n" +
 		"	id: " + strconv.Itoa(peer.id) + "\n" +
-		"	state: " + state + "\n" +
-		"	block height: " + strconv.Itoa(peer.getBlockHeight()) + "\n}"
+		"	state: " + state + "\n"
+	//"	block height: " + strconv.Itoa(peer.getBlockHeight()) + "\n}"
 }
 
 // 获取当前epoch中的{state: op->op}
@@ -180,9 +180,6 @@ func (peer *Peer) exec(epoch map[int]int) {
 
 // execInParalleling 并行执行不同Instance中的区块
 func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
-	if peer.state != Monitor {
-		return
-	}
 	var wg sync.WaitGroup
 	wg.Add(len(ExecBlocks))
 	for _, blocks := range ExecBlocks {
@@ -191,7 +188,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 		go func(blocks []Block, wg *sync.WaitGroup) {
 			defer wg.Done()
 			for i := 0; i < len(blocks); i++ {
-				//var buffer sync.Map
+				var buffer sync.Map
 				var wg4tx sync.WaitGroup
 				wg4tx.Add(len(blocks[i].txs))
 				//startTime := time.Now()
@@ -200,151 +197,151 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
 						defer wg4tx.Done()
-						//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
-						//////fmt.Print("very time:")
-						//////fmt.Println(time.Since(startTime))
-						//if err != nil {
-						//	panic(err)
-						//}
-						//switch tx.txType {
-						//case transactSavings:
-						//	readOp := tx.Ops[0]
-						//	writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-						//	// 第一个块读取数据库内容
-						//	if i == 0 {
-						//		readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
-						//		WriteResult := readResult + writeValue
-						//		tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
-						//		buffer.Store(readOp.Key, WriteResult)
-						//		//buffer[readOp.Key] = WriteResult
-						//	} else {
-						//		// 后续块读取前一个块的结果，如果没有buffer读取数据库
-						//		readResult, exist := buffer.Load(readOp.Key)
-						//		//readResult, exist := buffer[readOp.Key]
-						//		if !exist {
-						//			readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
-						//		}
-						//		WriteResult := readResult.(int) + writeValue
-						//		tx.Ops[1].Val = strconv.Itoa(WriteResult)
-						//		buffer.Store(readOp.Key, WriteResult)
-						//		//buffer[readOp.Key] = WriteResult
-						//	}
-						//case depositChecking:
-						//	readOp := tx.Ops[0]
-						//	writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-						//	if i == 0 {
-						//		readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
-						//		WriteResult := readResult + writeValue
-						//		tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
-						//		buffer.Store(readOp.Key, WriteResult)
-						//		//buffer[readOp.Key] = WriteResult
-						//	} else {
-						//		readResult, exist := buffer.Load(readOp.Key)
-						//		if !exist {
-						//			readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
-						//		}
-						//		WriteResult := readResult.(int) + writeValue
-						//		tx.Ops[1].Val = strconv.Itoa(WriteResult)
-						//		buffer.Store(readOp.Key, WriteResult)
-						//		//buffer[readOp.Key] = WriteResult
-						//	}
-						//case sendPayment:
-						//	readOpA := tx.Ops[0]
-						//	readOpB := tx.Ops[1]
-						//	writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
-						//	writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
-						//	if i == 0 {
-						//		readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
-						//		readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
-						//		WriteResultA := readResultA + writeValueA
-						//		WriteResultB := readResultB + writeValueB
-						//		tx.Ops[2].Val = strconv.Itoa(WriteResultA)
-						//		buffer.Store(readOpA.Key, writeValueA)
-						//		//buffer[readOpA.Key] = writeValueA
-						//		tx.Ops[3].Val = strconv.Itoa(WriteResultB)
-						//		buffer.Store(readOpB.Key, writeValueB)
-						//		//buffer[readOpB.Key] = writeValueB
-						//	} else {
-						//		readResultA, exist := buffer.Load(readOpA.Key)
-						//		if !exist {
-						//			readResultA, _ = strconv.Atoi(peer.smallBank.Read(readOpA.Key))
-						//		}
-						//		readResultB, exist := buffer.Load(readOpB.Key)
-						//		if !exist {
-						//			readResultB, _ = strconv.Atoi(peer.smallBank.Read(readOpB.Key))
-						//		}
-						//		WriteResultA := readResultA.(int) + writeValueA
-						//		WriteResultB := readResultB.(int) + writeValueB
-						//		tx.Ops[2].Val = strconv.Itoa(WriteResultA)
-						//		buffer.Store(readOpA.Key, writeValueA)
-						//		//buffer[readOpA.Key] = writeValueA
-						//		tx.Ops[3].Val = strconv.Itoa(WriteResultB)
-						//		buffer.Store(readOpB.Key, writeValueB)
-						//		//buffer[readOpB.Key] = writeValueB
-						//	}
-						//case writeCheck:
-						//	readOp := tx.Ops[0]
-						//	writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
-						//	if i == 0 {
-						//		readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
-						//		WriteResult := readResult + writeValue
-						//		tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
-						//		buffer.Store(readOp.Key, WriteResult)
-						//		//buffer[readOp.Key] = WriteResult
-						//	} else {
-						//		readResult, exist := buffer.Load(readOp.Key)
-						//		if !exist {
-						//			readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
-						//		}
-						//		WriteResult := readResult.(int) + writeValue
-						//		tx.Ops[1].Val = strconv.Itoa(WriteResult)
-						//		//buffer.Store(readOp.Key, WriteResult)
-						//	}
-						//case query:
-						//	readOpSaving := tx.Ops[0]
-						//	readOpChecking := tx.Ops[1]
-						//	if i == 0 {
-						//		peer.smallBank.Read(readOpSaving.Key)
-						//		peer.smallBank.Read(readOpChecking.Key)
-						//	} else {
-						//		_, exist := buffer.Load(readOpSaving.Key)
-						//		if !exist {
-						//			peer.smallBank.Read(readOpSaving.Key)
-						//		}
-						//		_, exist = buffer.Load(readOpChecking.Key)
-						//		if !exist {
-						//			peer.smallBank.Read(readOpChecking.Key)
-						//		}
-						//	}
-						//case amalgamate:
-						//	readOpSaving := tx.Ops[0]
-						//	readOpChecking := tx.Ops[1]
-						//	if i == 0 {
-						//		readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
-						//		WriteResultSaving := 0
-						//		tx.Ops[2].Val = strconv.Itoa(WriteResultSaving)
-						//		buffer.Store(readOpSaving.Key, 0)
-						//		readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
-						//		writeResultChecking := readResultSaving + readResultChecking
-						//		tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
-						//		buffer.Store(readOpChecking.Key, writeResultChecking)
-						//	} else {
-						//		readResultSaving, exist := buffer.Load(readOpSaving.Key)
-						//		if !exist {
-						//			readResultSaving, _ = strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
-						//		}
-						//		readResultChecking, exist := buffer.Load(readOpChecking.Key)
-						//		if !exist {
-						//			readResultChecking, _ = strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
-						//		}
-						//		writeResultSaving := 0
-						//		tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
-						//		buffer.Store(readOpSaving.Key, 0)
-						//		writeResultChecking := readResultSaving.(int) + readResultChecking.(int)
-						//		tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
-						//		buffer.Store(readOpChecking.Key, writeResultChecking)
-						//	}
-						//}
+						err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+						////fmt.Print("very time:")
+						////fmt.Println(time.Since(startTime))
+						if err != nil {
+							panic(err)
+						}
+						switch tx.txType {
+						case transactSavings:
+							readOp := tx.Ops[0]
+							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+							// 第一个块读取数据库内容
+							if i == 0 {
+								readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+								buffer.Store(readOp.Key, WriteResult)
+								//buffer[readOp.Key] = WriteResult
+							} else {
+								// 后续块读取前一个块的结果，如果没有buffer读取数据库
+								readResult, exist := buffer.Load(readOp.Key)
+								//readResult, exist := buffer[readOp.Key]
+								if !exist {
+									readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
+								}
+								WriteResult := readResult.(int) + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult)
+								buffer.Store(readOp.Key, WriteResult)
+								//buffer[readOp.Key] = WriteResult
+							}
+						case depositChecking:
+							readOp := tx.Ops[0]
+							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+							if i == 0 {
+								readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+								buffer.Store(readOp.Key, WriteResult)
+								//buffer[readOp.Key] = WriteResult
+							} else {
+								readResult, exist := buffer.Load(readOp.Key)
+								if !exist {
+									readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
+								}
+								WriteResult := readResult.(int) + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult)
+								buffer.Store(readOp.Key, WriteResult)
+								//buffer[readOp.Key] = WriteResult
+							}
+						case sendPayment:
+							readOpA := tx.Ops[0]
+							readOpB := tx.Ops[1]
+							writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+							writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+							if i == 0 {
+								readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+								readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
+								WriteResultA := readResultA + writeValueA
+								WriteResultB := readResultB + writeValueB
+								tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+								buffer.Store(readOpA.Key, writeValueA)
+								//buffer[readOpA.Key] = writeValueA
+								tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+								buffer.Store(readOpB.Key, writeValueB)
+								//buffer[readOpB.Key] = writeValueB
+							} else {
+								readResultA, exist := buffer.Load(readOpA.Key)
+								if !exist {
+									readResultA, _ = strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+								}
+								readResultB, exist := buffer.Load(readOpB.Key)
+								if !exist {
+									readResultB, _ = strconv.Atoi(peer.smallBank.Read(readOpB.Key))
+								}
+								WriteResultA := readResultA.(int) + writeValueA
+								WriteResultB := readResultB.(int) + writeValueB
+								tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+								buffer.Store(readOpA.Key, writeValueA)
+								//buffer[readOpA.Key] = writeValueA
+								tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+								buffer.Store(readOpB.Key, writeValueB)
+								//buffer[readOpB.Key] = writeValueB
+							}
+						case writeCheck:
+							readOp := tx.Ops[0]
+							writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+							if i == 0 {
+								readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+								WriteResult := readResult + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult) // 这里用于后续更新数据库execLastWrite
+								buffer.Store(readOp.Key, WriteResult)
+								//buffer[readOp.Key] = WriteResult
+							} else {
+								readResult, exist := buffer.Load(readOp.Key)
+								if !exist {
+									readResult, _ = strconv.Atoi(peer.smallBank.Read(readOp.Key))
+								}
+								WriteResult := readResult.(int) + writeValue
+								tx.Ops[1].Val = strconv.Itoa(WriteResult)
+								//buffer.Store(readOp.Key, WriteResult)
+							}
+						case query:
+							readOpSaving := tx.Ops[0]
+							readOpChecking := tx.Ops[1]
+							if i == 0 {
+								peer.smallBank.Read(readOpSaving.Key)
+								peer.smallBank.Read(readOpChecking.Key)
+							} else {
+								_, exist := buffer.Load(readOpSaving.Key)
+								if !exist {
+									peer.smallBank.Read(readOpSaving.Key)
+								}
+								_, exist = buffer.Load(readOpChecking.Key)
+								if !exist {
+									peer.smallBank.Read(readOpChecking.Key)
+								}
+							}
+						case amalgamate:
+							readOpSaving := tx.Ops[0]
+							readOpChecking := tx.Ops[1]
+							if i == 0 {
+								readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+								WriteResultSaving := 0
+								tx.Ops[2].Val = strconv.Itoa(WriteResultSaving)
+								buffer.Store(readOpSaving.Key, 0)
+								readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+								writeResultChecking := readResultSaving + readResultChecking
+								tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+								buffer.Store(readOpChecking.Key, writeResultChecking)
+							} else {
+								readResultSaving, exist := buffer.Load(readOpSaving.Key)
+								if !exist {
+									readResultSaving, _ = strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+								}
+								readResultChecking, exist := buffer.Load(readOpChecking.Key)
+								if !exist {
+									readResultChecking, _ = strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+								}
+								writeResultSaving := 0
+								tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
+								buffer.Store(readOpSaving.Key, 0)
+								writeResultChecking := readResultSaving.(int) + readResultChecking.(int)
+								tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+								buffer.Store(readOpChecking.Key, writeResultChecking)
+							}
+						}
 					}(tmpTx, &wg4tx)
 				}
 				wg4tx.Wait()
@@ -503,8 +500,8 @@ func (peer *Peer) log(content string) {
 }
 
 // 获取块高
-func (peer *Peer) getBlockHeight() int {
-	return len(peer.record[peer.id].blocks) - peer.record[peer.id].index
+func (peer *Peer) getBlockHeight(id int) int {
+	return len(peer.record[id].blocks) - peer.record[id].index
 }
 
 // AppendBlockToRecord 根据节点id向record添加共识好的块
@@ -543,19 +540,30 @@ func (peer *Peer) updateEpochTimeStamp() {
 func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
-func (peer *Peer) BlockOut() {
-	var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
-	peer.log("generate tx:" + strconv.Itoa(len(tx)))
-	newBlock := NewBlock(tx)
-	for _, eachPeer := range peerMap {
-		eachPeer.AppendBlockToRecord(peer.id, *newBlock)
+func (peer *Peer) BlockOut(flag int) {
+	for i, _ := range peer.peersIds {
+		if i != 3 {
+			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
+			//peer.log("generate tx:" + strconv.Itoa(len(tx)))
+			newBlock := NewBlock(tx)
+			peer.AppendBlockToRecord(i, *newBlock)
+		}
+		if flag%400 == 0 {
+			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
+			//peer.log("generate tx:" + strconv.Itoa(len(tx)))
+			newBlock := NewBlock(tx)
+			peer.AppendBlockToRecord(peer.peersIds[3], *newBlock)
+		}
 	}
+	//peer.AppendBlockToRecord()
+	//for _, eachPeer := range peerMap {
+	//eachPeer.AppendBlockToRecord(peer.id, *newBlock)
+	//}
 	peer.log(peer.string())
 
 }
 func (peer *Peer) sendCheckBlockHeight(id int) int {
-	tmp := peerMap[id]
-	return tmp.getBlockHeight()
+	return peer.getBlockHeight(id)
 }
 
 // 启动节点 Mine模式
@@ -601,14 +609,15 @@ func (peer *Peer) run() {
 				var wg sync.WaitGroup
 				wg.Add(len(peer.peersIds))
 				// 根据heightMap得到各个节点剩余块高，然后计算epoch中的比例
-				for _, eachPeer := range peerMap {
-					tmp := eachPeer
-					go func(tmp *Peer, wg *sync.WaitGroup) {
-						defer wg.Done()
-						tmp.exec(heightMap)
-					}(tmp, &wg)
-					//eachPeer.exec(heightMap)
-				}
+				peer.exec(heightMap)
+				//for _, eachPeer := range peerMap {
+				//	tmp := eachPeer
+				//	go func(tmp *Peer, wg *sync.WaitGroup) {
+				//		defer wg.Done()
+				//		tmp.exec(heightMap)
+				//	}(tmp, &wg)
+				//	//eachPeer.exec(heightMap)
+				//}
 				wg.Wait()
 
 			}
@@ -891,11 +900,13 @@ func (peer *Peer) start() {
 	peer.log(peer.string())
 	go func(peer *Peer) {
 		for {
+			blockFlag := 100
 			if peer.state == Dead {
 				break
 			}
 			if peer.checkBlockTimeout() {
-				peer.BlockOut()
+				peer.BlockOut(blockFlag)
+				blockFlag += 100
 				peer.getNewBlockTimeout()
 			}
 			//time.Sleep(time.Duration(100) * time.Millisecond)

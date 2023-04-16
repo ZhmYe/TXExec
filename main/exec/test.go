@@ -2,7 +2,6 @@ package exec
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 )
 
@@ -43,12 +42,12 @@ func newStatisticalResults(result map[int]*Record) *StatisticalResults {
 	newResult.records = result
 	return newResult
 }
-func PeerStop() StatisticalResults {
+func PeerStop(peer *Peer) StatisticalResults {
 	result := make([]map[int]*Record, 0)
-	for _, peer := range peerMap {
-		peer.stop()
-		result = append(result, peer.record)
-	}
+	//for _, peer := range peerMap {
+	peer.stop()
+	//result = append(result, peer.record)
+	//}
 
 	return *newStatisticalResults(result[0])
 }
@@ -57,32 +56,34 @@ func PeerInit() {
 	peerId := generateIds(config.PeerNumber)
 	publicKey, hashed, signature := getSignInfo()
 	var timestamp = time.Now()
-	var flag = false
+	//var flag = false
 	saving, savingAmount := GenSaving(config.OriginKeys)
 	checking, checkingAmount := GenChecking(config.OriginKeys)
-	for i, id := range peerId {
-		var state = Normal
-		if !flag && rand.Intn(config.PeerNumber) == 1 {
-			flag = true
-			state = Monitor
-		}
-		if !flag && i == config.PeerNumber-1 {
-			state = Monitor
-			flag = true
-		}
-		var peer = newPeer(id, state, timestamp, peerId, saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
-		//peerList.peers = append(peerList.peers, *peer)
-		peerMap[id] = peer
-	}
-	for _, peer := range peerMap {
-		var tmp = peer
-		go tmp.start()
-	}
+	var peer = newPeer(peerId[0], Monitor, timestamp, peerId, saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
+	peer.start()
+	//for i, id := range peerId {
+	//	var state = Normal
+	//	if !flag && rand.Intn(config.PeerNumber) == 1 {
+	//		flag = true
+	//		state = Monitor
+	//	}
+	//	if !flag && i == config.PeerNumber-1 {
+	//		state = Monitor
+	//		flag = true
+	//	}
+	//	var peer = newPeer(id, state, timestamp, peerId, saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
+	//	//peerList.peers = append(peerList.peers, *peer)
+	//	peerMap[id] = peer
+	//}
+	//for _, peer := range peerMap {
+	//	var tmp = peer
+	//	go tmp.start()
+	//}
 	timeStart := time.Now()
 	for {
 		totalExecBlockNumber := 0
 		if time.Since(timeStart) >= config.execTimeout {
-			statisticalResults := PeerStop()
+			statisticalResults := PeerStop(peer)
 			for _, record := range statisticalResults.records {
 				totalExecBlockNumber += record.index
 			}
