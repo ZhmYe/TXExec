@@ -145,7 +145,7 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println("exec start...")
-	//startTime := time.Now()
+	startTime := time.Now()
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
 		execBlocks := make(map[int][]Block, 0)
@@ -162,12 +162,12 @@ func (peer *Peer) exec(epoch map[int]int) {
 			instances = append(instances, *instance)
 		}
 		peer.execInParalleling(execBlocks)
-		//fmt.Print("exec time:")
-		//fmt.Print(time.Since(startTime))
-		//startTime = time.Now()
+		fmt.Print("exec time:")
+		fmt.Print(time.Since(startTime))
+		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
-		//fmt.Print(" abort time:")
-		//fmt.Print(time.Since(startTime))
+		fmt.Print(" abort time:")
+		fmt.Print(time.Since(startTime))
 		peer.mu.Lock()
 		tmpSum := 0
 		for _, id := range peer.peersIds {
@@ -176,8 +176,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 			tmpSum += epoch[id]
 			peer.record[id] = record4id
 		}
-		//fmt.Print("total block:")
-		//fmt.Println(tmpSum)
+		fmt.Print("total block:")
+		fmt.Println(tmpSum)
 		peer.mu.Unlock()
 	}
 
@@ -702,6 +702,7 @@ func (peer *Peer) execInSequential() {
 	// 执行交易
 	peer.execInSequentialImpl(blocks)
 	//peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
+	peer.mu.Lock()
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]
 		record4id.index += 1
@@ -709,6 +710,7 @@ func (peer *Peer) execInSequential() {
 	}
 	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
 	//peer.NotExecBlockIndex += epoch[peer.id]
+	peer.mu.Unlock()
 }
 
 // 启动节点 Sequential模式
