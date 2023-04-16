@@ -163,16 +163,21 @@ func (peer *Peer) exec(epoch map[int]int) {
 		}
 		peer.execInParalleling(execBlocks)
 		fmt.Print("exec time:")
-		fmt.Println(time.Since(startTime))
+		fmt.Print(time.Since(startTime))
 		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
-		fmt.Println(time.Since(startTime))
+		fmt.Print(" abort time:")
+		fmt.Print(time.Since(startTime))
 		peer.mu.Lock()
+		tmpSum := 0
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
 			record4id.index += epoch[id]
+			tmpSum += epoch[id]
 			peer.record[id] = record4id
 		}
+		fmt.Print("total block:")
+		fmt.Println(tmpSum)
 		peer.mu.Unlock()
 	}
 
