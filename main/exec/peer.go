@@ -541,8 +541,8 @@ func (peer *Peer) checkEpochTimeout() bool {
 	return time.Since(peer.epochTimeStamp) >= peer.epochTimeout
 }
 func (peer *Peer) BlockOut(flag int) {
-	fmt.Println("block out..")
 	for i, _ := range peer.peersIds {
+		fmt.Println(i)
 		if i != 3 {
 			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 			//peer.log("generate tx:" + strconv.Itoa(len(tx)))
