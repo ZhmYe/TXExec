@@ -536,7 +536,7 @@ func (peer *Peer) getNewBlockTimeout() {
 	if peer.id != 3 {
 		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	} else {
-		peer.blockTimeout = time.Duration(300) * time.Millisecond
+		peer.blockTimeout = time.Duration(100) * time.Millisecond
 	}
 	peer.blockTimeStamp = time.Now()
 }
@@ -562,7 +562,7 @@ func (peer *Peer) BlockOut(flag int) {
 			peer.AppendBlockToRecord(i, *newBlock)
 		}
 	}
-	if flag%300 == 0 {
+	if flag%100 == 0 {
 		var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
 		//peer.log("generate tx:" + strconv.Itoa(len(tx)))
 		newBlock := NewBlock(tx)
@@ -604,16 +604,16 @@ func (peer *Peer) runInParalleling() {
 				if total == 0 {
 					continue
 				}
-				if total > 6 {
+				if total > 5 {
 					for id, height := range heightMap {
 						if height == 0 {
 							continue
 						} else {
-							tmp := int(math.Floor(float64(7) * float64(height) / float64(total)))
+							tmp := int(math.Floor(float64(5) * float64(height) / float64(total)))
 							if tmp == 0 {
 								heightMap[id] = 1
-							} else if tmp > 7-config.PeerNumber {
-								heightMap[id] = 7 - config.PeerNumber
+							} else if tmp > 6-config.PeerNumber {
+								heightMap[id] = 6 - config.PeerNumber
 							} else {
 								heightMap[id] = tmp
 							}
