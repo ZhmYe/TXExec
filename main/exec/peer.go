@@ -145,7 +145,6 @@ func (peer *Peer) getHashTable(id int, bias int) map[string]StateSet {
 }
 func (peer *Peer) exec(epoch map[int]int) {
 	//fmt.Println("exec start...")
-	startTime := time.Now()
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
 		execBlocks := make(map[int][]Block, 0)
@@ -163,6 +162,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 			}
 			instances = append(instances, *instance)
 		}
+		startTime := time.Now()
 		fmt.Print("block number:" + strconv.Itoa(totalNumber))
 		peer.execInParalleling(execBlocks)
 		fmt.Print("exec time:")
