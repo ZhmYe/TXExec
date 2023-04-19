@@ -162,8 +162,8 @@ func (peer *Peer) exec(epoch map[int]int) {
 			}
 			instances = append(instances, *instance)
 		}
-		startTime := time.Now()
 		fmt.Print("block number:" + strconv.Itoa(totalNumber))
+		startTime := time.Now()
 		peer.execInParalleling(execBlocks)
 		fmt.Print("exec time:")
 		fmt.Print(time.Since(startTime))
