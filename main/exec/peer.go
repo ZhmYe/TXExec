@@ -170,7 +170,19 @@ func (peer *Peer) exec(epoch map[int]int) {
 		startTime = time.Now()
 		peer.OperationAfterExecution(instances)
 		fmt.Print(" abort time:")
-		fmt.Println(time.Since(startTime))
+		fmt.Print(time.Since(startTime))
+		abortNumber := 0
+		for _, blocks := range execBlocks {
+			for i := 0; i < len(blocks); i++ {
+				for _, transaction := range blocks[i].txs {
+					if transaction.abort {
+						abortNumber += 1
+					}
+				}
+			}
+		}
+		fmt.Print(" abort rate:")
+		fmt.Print(float64(abortNumber) / float64(totalNumber*config.BatchTxNum))
 		peer.mu.Lock()
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
