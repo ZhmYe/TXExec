@@ -604,16 +604,16 @@ func (peer *Peer) runInParalleling() {
 				if total == 0 {
 					continue
 				}
-				if total > 10 {
+				if total > 6 {
 					for id, height := range heightMap {
 						if height == 0 {
 							continue
 						} else {
-							tmp := int(math.Floor(float64(10) * float64(height) / float64(total)))
+							tmp := int(math.Floor(float64(7) * float64(height) / float64(total)))
 							if tmp == 0 {
 								heightMap[id] = 1
-							} else if tmp > 11-config.PeerNumber {
-								heightMap[id] = 11 - config.PeerNumber
+							} else if tmp > 7-config.PeerNumber {
+								heightMap[id] = 7 - config.PeerNumber
 							} else {
 								heightMap[id] = tmp
 							}
