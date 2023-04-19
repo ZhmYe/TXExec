@@ -182,7 +182,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 			}
 		}
 		fmt.Print(" abort rate:")
-		fmt.Print(float64(abortNumber) / float64(totalNumber*config.BatchTxNum))
+		fmt.Println(float64(abortNumber) / float64(totalNumber*config.BatchTxNum))
 		peer.mu.Lock()
 		for _, id := range peer.peersIds {
 			record4id, _ := peer.record[id]
