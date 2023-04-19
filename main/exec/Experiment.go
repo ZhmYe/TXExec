@@ -40,7 +40,6 @@ func AbortRateTest() {
 		record := peer.record[id]
 		execBlocks[id] = record.blocks[record.index : record.index+bias]
 		instance := newInstance(id)
-		totalNumber += bias
 		for i := 0; i < bias; i++ {
 			hashtable := peer.getHashTable(id, i)
 			//fmt.Println("transaction sort start...")
