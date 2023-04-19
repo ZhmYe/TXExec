@@ -149,10 +149,12 @@ func (peer *Peer) exec(epoch map[int]int) {
 	if len(epoch) != 0 {
 		instances := make([]Instance, 0)
 		execBlocks := make(map[int][]Block, 0)
+		totalNumber := 0
 		for id, bias := range epoch {
 			record := peer.record[id]
 			execBlocks[id] = record.blocks[record.index : record.index+bias]
 			instance := newInstance(id)
+			totalNumber += bias
 			for i := 0; i < bias; i++ {
 				hashtable := peer.getHashTable(id, i)
 				//fmt.Println("transaction sort start...")
@@ -161,6 +163,7 @@ func (peer *Peer) exec(epoch map[int]int) {
 			}
 			instances = append(instances, *instance)
 		}
+		fmt.Print("block number:" + strconv.Itoa(totalNumber))
 		peer.execInParalleling(execBlocks)
 		fmt.Print("exec time:")
 		fmt.Print(time.Since(startTime))
