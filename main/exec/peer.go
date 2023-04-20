@@ -826,8 +826,8 @@ func (peer *Peer) execInSequentialPlusImpl(blocks []Block) {
 	wg.Wait()
 }
 func (peer *Peer) abortInSequentialPlus(blocks []Block) {
-	ReadSet := make(map[string]bool)
-	WriteSet := make(map[string]bool)
+	ReadSet := make([]string, 0)
+	WriteSet := make([]string, 0)
 	for _, block := range blocks {
 		blockReadSet := make(map[string]bool)
 		blockWriteSet := make(map[string]bool)
@@ -842,7 +842,13 @@ func (peer *Peer) abortInSequentialPlus(blocks []Block) {
 				address := op.Key
 				optionType := op.Type
 				if optionType == OpRead {
-					_, conflict := WriteSet[address]
+					conflict := false
+					for _, haveAddress := range WriteSet {
+						if haveAddress == address {
+							conflict = true
+							break
+						}
+					}
 					if conflict {
 						tx.abort = true
 					} else {
@@ -853,11 +859,28 @@ func (peer *Peer) abortInSequentialPlus(blocks []Block) {
 				}
 			}
 		}
+		//flag := false
 		for address, _ := range blockReadSet {
-			ReadSet[address] = true
+			flag := false
+			for _, haveAddress := range ReadSet {
+				if haveAddress == address {
+					flag = true
+				}
+			}
+			if !flag {
+				ReadSet = append(ReadSet, address)
+			}
 		}
 		for address, _ := range blockWriteSet {
-			WriteSet[address] = true
+			flag := false
+			for _, haveAddress := range WriteSet {
+				if haveAddress == address {
+					flag = true
+				}
+			}
+			if !flag {
+				WriteSet = append(WriteSet, address)
+			}
 		}
 	}
 }
