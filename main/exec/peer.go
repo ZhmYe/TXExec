@@ -823,6 +823,7 @@ func (peer *Peer) execInSequentialPlusImpl(blocks []Block) {
 			}
 		}(tmpBlock, &wg)
 	}
+	wg.Wait()
 }
 func (peer *Peer) abortInSequentialPlus(blocks []Block) {
 	ReadSet := make(map[string]bool)
