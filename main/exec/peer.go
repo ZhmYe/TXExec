@@ -751,6 +751,146 @@ func (peer *Peer) runInSequential() {
 		}
 	}
 }
+func (peer *Peer) execInSequentialPlusImpl(blocks []Block) {
+	var wg sync.WaitGroup
+	wg.Add(len(blocks))
+	for _, block := range blocks {
+		//time.Sleep(time.Duration(10) * time.Millisecond)
+		//fmt.Println(len(block.txs))
+		tmpBlock := block
+		go func(block Block, wg *sync.WaitGroup) {
+			defer wg.Done()
+			for _, tx := range block.txs {
+				//fmt.Println("start verify...")
+				//startTime := time.Now()
+				err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+				if err != nil {
+					panic(err)
+				}
+				//fmt.Println(time.Since(startTime))
+				switch tx.txType {
+				case transactSavings:
+					readOp := tx.Ops[0]
+					writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+					readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+					WriteResult := readResult + writeValue
+					tx.Ops[1].Val = strconv.Itoa(WriteResult)
+					peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+				case depositChecking:
+					readOp := tx.Ops[0]
+					writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+					readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+					WriteResult := readResult + writeValue
+					tx.Ops[1].Val = strconv.Itoa(WriteResult)
+					peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+				case sendPayment:
+					readOpA := tx.Ops[0]
+					readOpB := tx.Ops[1]
+					writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+					writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+					readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+					readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
+					WriteResultA := readResultA + writeValueA
+					WriteResultB := readResultB + writeValueB
+					tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+					peer.smallBank.Update(readOpA.Key, strconv.Itoa(writeValueA))
+					tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+					peer.smallBank.Update(readOpB.Key, strconv.Itoa(writeValueB))
+				case writeCheck:
+					readOp := tx.Ops[0]
+					writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+					readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+					WriteResult := readResult + writeValue
+					tx.Ops[1].Val = strconv.Itoa(WriteResult)
+					peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+				case query:
+					readOpSaving := tx.Ops[0]
+					readOpChecking := tx.Ops[1]
+					peer.smallBank.Read(readOpSaving.Key)
+					peer.smallBank.Read(readOpChecking.Key)
+				case amalgamate:
+					readOpSaving := tx.Ops[0]
+					readOpChecking := tx.Ops[1]
+					readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+					readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+					writeResultSaving := 0
+					tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
+					peer.smallBank.Update(readOpSaving.Key, strconv.Itoa(0))
+					writeResultChecking := readResultSaving + readResultChecking
+					tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+					peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
+				}
+			}
+		}(tmpBlock, &wg)
+	}
+}
+func (peer *Peer) abortInSequentialPlus(blocks []Block) {
+	ReadSet := make(map[string]bool)
+	WriteSet := make(map[string]bool)
+	for _, block := range blocks {
+		blockReadSet := make(map[string]bool)
+		blockWriteSet := make(map[string]bool)
+		for _, tx := range block.txs {
+			if tx.abort {
+				continue
+			}
+			for _, op := range tx.Ops {
+				if tx.abort {
+					break
+				}
+				address := op.Key
+				optionType := op.Type
+				if optionType == OpRead {
+					_, conflict := WriteSet[address]
+					if conflict {
+						tx.abort = true
+					} else {
+						blockReadSet[address] = true
+					}
+				} else {
+					blockWriteSet[address] = true
+				}
+			}
+		}
+		for address, _ := range blockReadSet {
+			ReadSet[address] = true
+		}
+		for address, _ := range blockWriteSet {
+			WriteSet[address] = true
+		}
+	}
+}
+func (peer *Peer) execInSequentialPlus() {
+	blocks := make([]Block, 0)
+	for _, record := range peer.record {
+		block := record.blocks[record.index]
+		blocks = append(blocks, block)
+	}
+	// 执行交易
+	peer.execInSequentialPlusImpl(blocks)
+	peer.abortInSequentialPlus(blocks)
+	//peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
+	for _, id := range peer.peersIds {
+		record4id := peer.record[id]
+		record4id.index += 1
+		peer.record[id] = record4id
+	}
+	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
+	//peer.NotExecBlockIndex += epoch[peer.id]
+}
+func (peer *Peer) runInSequentialPlus() {
+	for {
+		if peer.state == Dead {
+			break
+		}
+		if peer.checkComplete() {
+			peer.log(peer.RecordLog())
+			//startTime := time.Now()
+			peer.execInSequentialPlus()
+			//fmt.Println(time.Since(startTime))
+		}
+	}
+}
 func (peer *Peer) start() {
 	fmt.Println("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
 	//peer.log("Peer(id:" + strconv.Itoa(peer.id) + ") start...")
@@ -773,7 +913,7 @@ func (peer *Peer) start() {
 	case Paralleling:
 		peer.runInParalleling()
 	case Sequential:
-		peer.runInSequential()
+		peer.runInSequentialPlus()
 	}
 
 }
