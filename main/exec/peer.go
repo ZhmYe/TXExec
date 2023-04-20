@@ -866,9 +866,27 @@ func (peer *Peer) execInSequentialPlus() {
 		block := record.blocks[record.index]
 		blocks = append(blocks, block)
 	}
+	totalNumber := len(blocks)
 	// 执行交易
+	fmt.Print("block number:" + strconv.Itoa(totalNumber))
+	startTime := time.Now()
 	peer.execInSequentialPlusImpl(blocks)
+	fmt.Print("exec time:")
+	fmt.Print(time.Since(startTime))
+	startTime = time.Now()
 	peer.abortInSequentialPlus(blocks)
+	fmt.Print(" abort time:")
+	fmt.Print(time.Since(startTime))
+	abortNumber := 0
+	for i := 0; i < len(blocks); i++ {
+		for _, transaction := range blocks[i].txs {
+			if transaction.abort {
+				abortNumber += 1
+			}
+		}
+	}
+	fmt.Print(" abort rate:")
+	fmt.Println(float64(abortNumber) / float64(totalNumber*config.BatchTxNum))
 	//peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
 	for _, id := range peer.peersIds {
 		record4id := peer.record[id]

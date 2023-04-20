@@ -30,10 +30,10 @@ type Config struct {
 }
 
 var config = Config{
-	BatchTxNum:           500,
+	BatchTxNum:           200,
 	ValueSize:            64,
 	OpsPerTx:             3,
-	OriginKeys:           5000,
+	OriginKeys:           10000,
 	WRate:                0.5,
 	ConflictMode:         false,
 	InstanceConflictRate: 0.2,
@@ -43,5 +43,5 @@ var config = Config{
 	PeerNumber:           4,
 	execTimeout:          time.Duration(1) * time.Minute,
 	execTimeNumber:       60,
-	RunType:              Paralleling,
+	RunType:              Sequential,
 }
