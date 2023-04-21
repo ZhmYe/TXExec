@@ -375,19 +375,19 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 // map[address] -> OrderInstance{variance, instances, ...}
 // 根据上述map, 计算每个map的方差， 按序构建Graph
 func (peer *Peer) OperationAfterExecution(instances []Instance) {
-	var wg4computeCascade sync.WaitGroup
-	wg4computeCascade.Add(len(instances))
+	//var wg4computeCascade sync.WaitGroup
+	//wg4computeCascade.Add(len(instances))
 	// 并行计算所有Instance级联度
 	//fmt.Println("cascade compute start...")
 	//startTime := time.Now()
 	for _, instance := range instances {
 		tmpInstance := instance
-		go func(instance Instance, wg4computeCascade *sync.WaitGroup) {
-			defer wg4computeCascade.Done()
-			instance.computeCascade() // 计算每个instance的级联度
-		}(tmpInstance, &wg4computeCascade)
+		//go func(instance Instance, wg4computeCascade *sync.WaitGroup) {
+		//	defer wg4computeCascade.Done()
+		tmpInstance.computeCascade() // 计算每个instance的级联度
+		//}(tmpInstance, &wg4computeCascade)
 	}
-	wg4computeCascade.Wait()
+	//wg4computeCascade.Wait()
 	//fmt.Print("compute Cascade:")
 	//fmt.Println(time.Since(startTime))
 	//startTime = time.Now()
