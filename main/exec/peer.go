@@ -775,14 +775,14 @@ func (peer *Peer) execInSequentialPlusImpl(blocks []Block) {
 					readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 					WriteResult := readResult + writeValue
 					tx.Ops[1].Val = strconv.Itoa(WriteResult)
-					peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+					//peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 				case depositChecking:
 					readOp := tx.Ops[0]
 					writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 					readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 					WriteResult := readResult + writeValue
 					tx.Ops[1].Val = strconv.Itoa(WriteResult)
-					peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+					//peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 				case sendPayment:
 					readOpA := tx.Ops[0]
 					readOpB := tx.Ops[1]
@@ -793,16 +793,16 @@ func (peer *Peer) execInSequentialPlusImpl(blocks []Block) {
 					WriteResultA := readResultA + writeValueA
 					WriteResultB := readResultB + writeValueB
 					tx.Ops[2].Val = strconv.Itoa(WriteResultA)
-					peer.smallBank.Update(readOpA.Key, strconv.Itoa(writeValueA))
+					//peer.smallBank.Update(readOpA.Key, strconv.Itoa(writeValueA))
 					tx.Ops[3].Val = strconv.Itoa(WriteResultB)
-					peer.smallBank.Update(readOpB.Key, strconv.Itoa(writeValueB))
+					//peer.smallBank.Update(readOpB.Key, strconv.Itoa(writeValueB))
 				case writeCheck:
 					readOp := tx.Ops[0]
 					writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
 					readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
 					WriteResult := readResult + writeValue
 					tx.Ops[1].Val = strconv.Itoa(WriteResult)
-					peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+					//peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
 				case query:
 					readOpSaving := tx.Ops[0]
 					readOpChecking := tx.Ops[1]
@@ -815,10 +815,10 @@ func (peer *Peer) execInSequentialPlusImpl(blocks []Block) {
 					readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
 					writeResultSaving := 0
 					tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
-					peer.smallBank.Update(readOpSaving.Key, strconv.Itoa(0))
+					//peer.smallBank.Update(readOpSaving.Key, strconv.Itoa(0))
 					writeResultChecking := readResultSaving + readResultChecking
 					tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
-					peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
+					//peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
 				}
 			}
 		}(tmpBlock, &wg)
@@ -929,6 +929,164 @@ func (peer *Peer) runInSequentialPlus() {
 			peer.log(peer.RecordLog())
 			//startTime := time.Now()
 			peer.execInSequentialPlus()
+			//fmt.Println(time.Since(startTime))
+		}
+	}
+}
+func (peer *Peer) execInAllParallelingImpl(blocks []Block) {
+	transactions := make([]*Tx, 0)
+	for _, block := range blocks {
+		for _, tx := range block.txs {
+			transactions = append(transactions, tx)
+		}
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(transactions))
+	for _, tx := range transactions {
+		tmpTx := tx
+		go func(tx *Tx, wg *sync.WaitGroup) {
+			defer wg.Done()
+			err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			if err != nil {
+				panic(err)
+			}
+			//fmt.Println(time.Since(startTime))
+			switch tx.txType {
+			case transactSavings:
+				readOp := tx.Ops[0]
+				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+				WriteResult := readResult + writeValue
+				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				//peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+			case depositChecking:
+				readOp := tx.Ops[0]
+				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+				WriteResult := readResult + writeValue
+				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				//peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+			case sendPayment:
+				readOpA := tx.Ops[0]
+				readOpB := tx.Ops[1]
+				writeValueA, _ := strconv.Atoi(tx.Ops[2].Val)
+				writeValueB, _ := strconv.Atoi(tx.Ops[3].Val)
+				readResultA, _ := strconv.Atoi(peer.smallBank.Read(readOpA.Key))
+				readResultB, _ := strconv.Atoi(peer.smallBank.Read(readOpB.Key))
+				WriteResultA := readResultA + writeValueA
+				WriteResultB := readResultB + writeValueB
+				tx.Ops[2].Val = strconv.Itoa(WriteResultA)
+				//peer.smallBank.Update(readOpA.Key, strconv.Itoa(writeValueA))
+				tx.Ops[3].Val = strconv.Itoa(WriteResultB)
+				//peer.smallBank.Update(readOpB.Key, strconv.Itoa(writeValueB))
+			case writeCheck:
+				readOp := tx.Ops[0]
+				writeValue, _ := strconv.Atoi(tx.Ops[1].Val)
+				readResult, _ := strconv.Atoi(peer.smallBank.Read(readOp.Key))
+				WriteResult := readResult + writeValue
+				tx.Ops[1].Val = strconv.Itoa(WriteResult)
+				//peer.smallBank.Update(readOp.Key, strconv.Itoa(WriteResult))
+			case query:
+				readOpSaving := tx.Ops[0]
+				readOpChecking := tx.Ops[1]
+				peer.smallBank.Read(readOpSaving.Key)
+				peer.smallBank.Read(readOpChecking.Key)
+			case amalgamate:
+				readOpSaving := tx.Ops[0]
+				readOpChecking := tx.Ops[1]
+				readResultSaving, _ := strconv.Atoi(peer.smallBank.Read(readOpSaving.Key))
+				readResultChecking, _ := strconv.Atoi(peer.smallBank.Read(readOpChecking.Key))
+				writeResultSaving := 0
+				tx.Ops[2].Val = strconv.Itoa(writeResultSaving)
+				//peer.smallBank.Update(readOpSaving.Key, strconv.Itoa(0))
+				writeResultChecking := readResultSaving + readResultChecking
+				tx.Ops[3].Val = strconv.Itoa(writeResultChecking)
+				//peer.smallBank.Update(readOpChecking.Key, strconv.Itoa(writeResultChecking))
+			}
+		}(tmpTx, &wg)
+	}
+}
+func (peer *Peer) abortInAllParalleling(blocks []Block) {
+	transactions := make([]*Tx, 0)
+	for _, block := range blocks {
+		for _, tx := range block.txs {
+			transactions = append(transactions, tx)
+		}
+	}
+	ReadSet := make(map[string]bool)
+	WriteSet := make(map[string]bool)
+	for _, tx := range transactions {
+		txReadSet := make(map[string]bool)
+		txWriteSet := make(map[string]bool)
+		for _, op := range tx.Ops {
+			if tx.abort {
+				break
+			}
+			if op.Type == OpRead {
+				_, exist := WriteSet[op.Key]
+				if exist {
+					tx.abort = true
+				}
+				txReadSet[op.Key] = true
+			} else {
+				txWriteSet[op.Key] = true
+			}
+		}
+		if !tx.abort {
+			for key, _ := range txReadSet {
+				ReadSet[key] = true
+			}
+			for key, _ := range txWriteSet {
+				WriteSet[key] = true
+			}
+		}
+	}
+}
+func (peer *Peer) execInAllParalleling() {
+	blocks := make([]Block, 0)
+	for _, record := range peer.record {
+		block := record.blocks[record.index]
+		blocks = append(blocks, block)
+	}
+	totalNumber := len(blocks)
+	// 执行交易
+	fmt.Print("block number:" + strconv.Itoa(totalNumber))
+	startTime := time.Now()
+	peer.execInAllParallelingImpl(blocks)
+	fmt.Print("exec time:")
+	fmt.Print(time.Since(startTime))
+	startTime = time.Now()
+	peer.abortInAllParalleling(blocks)
+	fmt.Print(" abort time:")
+	fmt.Print(time.Since(startTime))
+	abortNumber := 0
+	for i := 0; i < len(blocks); i++ {
+		for _, transaction := range blocks[i].txs {
+			if transaction.abort {
+				abortNumber += 1
+			}
+		}
+	}
+	fmt.Print(" abort rate:")
+	fmt.Println(float64(abortNumber) / float64(totalNumber*config.BatchTxNum))
+	//peer.log("exec ops:" + strconv.Itoa(len(peer.peersIds)*config.BatchTxNum*config.OpsPerTx))
+	for _, id := range peer.peersIds {
+		record4id := peer.record[id]
+		record4id.index += 1
+		peer.record[id] = record4id
+	}
+	peer.execNumber.number += len(peer.peersIds) * config.BatchTxNum
+	//peer.NotExecBlockIndex += epoch[peer.id]
+}
+func (peer *Peer) runInAllParalleling() {
+	for {
+		if peer.state == Dead {
+			break
+		}
+		if peer.checkComplete() {
+			peer.log(peer.RecordLog())
+			//startTime := time.Now()
+			peer.execInAllParalleling()
 			//fmt.Println(time.Since(startTime))
 		}
 	}
