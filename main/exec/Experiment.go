@@ -17,7 +17,7 @@ func SimpleTest() {
 	blockNumber := make([]int, 4)
 	blockNumber[0] = 1
 	blockNumber[1] = 1
-	blockNumber[2] = 1
+	blockNumber[2] = 0
 	blockNumber[3] = 0
 	totalNumber := blockNumber[0] + blockNumber[1] + blockNumber[2] + blockNumber[3]
 	for id, number := range blockNumber {
