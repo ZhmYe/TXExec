@@ -15,10 +15,10 @@ func SimpleTest() {
 	checking, checkingAmount := GenChecking(config.OriginKeys)
 	var peer = newPeer(peerId[0], Monitor, timestamp, peerId, saving, savingAmount, checking, checkingAmount, publicKey, hashed, signature)
 	blockNumber := make([]int, 4)
-	blockNumber[0] = 1
-	blockNumber[1] = 0
-	blockNumber[2] = 0
-	blockNumber[3] = 0
+	blockNumber[0] = 2
+	blockNumber[1] = 1
+	blockNumber[2] = 1
+	blockNumber[3] = 1
 	totalNumber := blockNumber[0] + blockNumber[1] + blockNumber[2] + blockNumber[3]
 	for id, number := range blockNumber {
 		blocks := make([]Block, 0)
