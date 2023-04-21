@@ -1005,6 +1005,7 @@ func (peer *Peer) execInAllParallelingImpl(blocks []Block) {
 			}
 		}(tmpTx, &wg)
 	}
+	wg.Wait()
 }
 func (peer *Peer) abortInAllParalleling(blocks []Block) {
 	transactions := make([]*Tx, 0)
