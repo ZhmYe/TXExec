@@ -20,19 +20,19 @@ func SimpleTest() {
 	blockNumber[2] = 1
 	blockNumber[3] = 1
 	totalNumber := blockNumber[0] + blockNumber[1] + blockNumber[2] + blockNumber[3]
-	//for id, number := range blockNumber {
-	//	blocks := make([]Block, 0)
-	//	for i := 0; i < number; i++ {
-	//		var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
-	//		//peer.log("generate tx:" + strconv.Itoa(len(tx)))
-	//		newBlock := NewBlock(tx)
-	//		blocks = append(blocks, *newBlock)
-	//	}
-	//	record := newRecord(id)
-	//	record.index = 0
-	//	record.blocks = blocks
-	//	peer.record[id] = record
-	//}
+	for id, number := range blockNumber {
+		blocks := make([]Block, 0)
+		for i := 0; i < number; i++ {
+			var tx = peer.smallBank.GenTxSet(config.BatchTxNum)
+			//peer.log("generate tx:" + strconv.Itoa(len(tx)))
+			newBlock := NewBlock(tx)
+			blocks = append(blocks, *newBlock)
+		}
+		record := newRecord(id)
+		record.index = 0
+		record.blocks = blocks
+		peer.record[id] = record
+	}
 	blocks4SequentialPlus := make([]Block, 0)
 	for id, bias := range blockNumber {
 		record := peer.record[id]
