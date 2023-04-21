@@ -18,7 +18,7 @@ func AbortRateTest() {
 	blockNumber[0] = 1
 	blockNumber[1] = 1
 	blockNumber[2] = 1
-	blockNumber[3] = 0
+	blockNumber[3] = 1
 	totalNumber := blockNumber[0] + blockNumber[1] + blockNumber[2] + blockNumber[3]
 	for id, number := range blockNumber {
 		blocks := make([]Block, 0)
