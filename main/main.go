@@ -5,7 +5,7 @@ import "TXExec/exec"
 func test() {
 	//exec.ConflictTest()
 	exec.PeerInit()
-	//exec.AbortRateTest()
+	//exec.SimpleTest()
 }
 func main() {
 	//exec.Init()

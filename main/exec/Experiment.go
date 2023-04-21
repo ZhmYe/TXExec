@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func AbortRateTest() {
+func SimpleTest() {
 	peerId := generateIds(config.PeerNumber)
 	publicKey, hashed, signature := getSignInfo()
 	var timestamp = time.Now()
@@ -33,37 +33,51 @@ func AbortRateTest() {
 		record.blocks = blocks
 		peer.record[id] = record
 	}
-	instances := make([]Instance, 0)
-	execBlocks := make(map[int][]Block, 0)
-	epoch := blockNumber
-	for id, bias := range epoch {
+	blocks4SequentialPlus := make([]Block, 0)
+	for id, bias := range blockNumber {
 		record := peer.record[id]
-		execBlocks[id] = record.blocks[record.index : record.index+bias]
-		instance := newInstance(id)
-		for i := 0; i < bias; i++ {
-			hashtable := peer.getHashTable(id, i)
-			//fmt.Println("transaction sort start...")
-			TransactionSort(hashtable)
-			instance.addHashTable(hashtable)
-		}
-		instances = append(instances, *instance)
+		blocks4SequentialPlus = append(blocks4SequentialPlus, record.blocks[record.index:record.index+bias]...)
 	}
+	//instances := make([]Instance, 0)
+	//execBlocks := make(map[int][]Block, 0)
+	//epoch := blockNumber
+	//for id, bias := range epoch {
+	//	record := peer.record[id]
+	//	execBlocks[id] = record.blocks[record.index : record.index+bias]
+	//	instance := newInstance(id)
+	//	for i := 0; i < bias; i++ {
+	//		hashtable := peer.getHashTable(id, i)
+	//		//fmt.Println("transaction sort start...")
+	//		TransactionSort(hashtable)
+	//		instance.addHashTable(hashtable)
+	//	}
+	//	instances = append(instances, *instance)
+	//}
 	fmt.Print("block number:" + strconv.Itoa(totalNumber))
 	startTime := time.Now()
-	peer.execInParalleling(execBlocks)
+	//peer.execInParalleling(execBlocks)
+	peer.execInSequentialPlusImpl(blocks4SequentialPlus)
 	fmt.Print("exec time:")
 	fmt.Print(time.Since(startTime))
 	startTime = time.Now()
-	peer.OperationAfterExecution(instances)
+	//peer.OperationAfterExecution(instances)
+	peer.abortInSequentialPlus(blocks4SequentialPlus)
 	fmt.Print(" abort time:")
 	fmt.Print(time.Since(startTime))
 	abortNumber := 0
-	for _, blocks := range execBlocks {
-		for i := 0; i < len(blocks); i++ {
-			for _, transaction := range blocks[i].txs {
-				if transaction.abort {
-					abortNumber += 1
-				}
+	//for _, blocks := range execBlocks {
+	//	for i := 0; i < len(blocks); i++ {
+	//		for _, transaction := range blocks[i].txs {
+	//			if transaction.abort {
+	//				abortNumber += 1
+	//			}
+	//		}
+	//	}
+	//}
+	for _, block := range blocks4SequentialPlus {
+		for _, transaction := range block.txs {
+			if transaction.abort {
+				abortNumber += 1
 			}
 		}
 	}
