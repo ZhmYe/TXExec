@@ -955,6 +955,7 @@ func (peer *Peer) start() {
 	case Paralleling:
 		peer.runInParalleling()
 	case Sequential:
+		//peer.runInSequential()
 		peer.runInSequentialPlus()
 	}
 
