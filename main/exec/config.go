@@ -43,5 +43,5 @@ var config = Config{
 	PeerNumber:           4,
 	execTimeout:          time.Duration(1) * time.Minute,
 	execTimeNumber:       60,
-	RunType:              Paralleling,
+	RunType:              Sequential,
 }
