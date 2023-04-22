@@ -169,7 +169,6 @@ func (s *Smallbank) Query(saving string, checking string) *Tx {
 func (s *Smallbank) GetRandomAmount() int {
 	return RandomRange(1e3, 1e4)
 }
-
 func (s *Smallbank) GetNormalRandomIndex() int {
 	n := len(s.savings)
 	hotRateCheck := rand.Float64()
