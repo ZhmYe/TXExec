@@ -422,25 +422,25 @@ func (peer *Peer) OperationAfterExecution(instances []Instance) {
 		List4AddressOrder = append(List4AddressOrder, address)
 	}
 	// 冒泡排序, List4Address里的顺序就是最后Address的顺序
-	//AddressSortFlag := true
-	//for i := 0; i < len(List4AddressOrder)-1; i++ {
-	//	AddressSortFlag = true
-	//	// 方差倒排，在方差一样的基础上看谁的instance多
-	//	for j := 0; j < len(List4AddressOrder)-i-1; j++ {
-	//		if OrderInstanceMap[List4AddressOrder[j]].variance < OrderInstanceMap[List4AddressOrder[j+1]].variance {
-	//			List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
-	//			AddressSortFlag = false
-	//		} else if OrderInstanceMap[List4AddressOrder[j]].variance == OrderInstanceMap[List4AddressOrder[j+1]].variance {
-	//			if len(OrderInstanceMap[List4AddressOrder[j]].instances) < len(OrderInstanceMap[List4AddressOrder[i]].instances) {
-	//				List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
-	//				AddressSortFlag = false
-	//			}
-	//		}
-	//	}
-	//	if AddressSortFlag {
-	//		break
-	//	}
-	//}
+	AddressSortFlag := true
+	for i := 0; i < len(List4AddressOrder)-1; i++ {
+		AddressSortFlag = true
+		// 方差倒排，在方差一样的基础上看谁的instance多
+		for j := 0; j < len(List4AddressOrder)-i-1; j++ {
+			if OrderInstanceMap[List4AddressOrder[j]].variance < OrderInstanceMap[List4AddressOrder[j+1]].variance {
+				List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
+				AddressSortFlag = false
+			} else if OrderInstanceMap[List4AddressOrder[j]].variance == OrderInstanceMap[List4AddressOrder[j+1]].variance {
+				if len(OrderInstanceMap[List4AddressOrder[j]].instances) < len(OrderInstanceMap[List4AddressOrder[i]].instances) {
+					List4AddressOrder[j], List4AddressOrder[j+1] = List4AddressOrder[j+1], List4AddressOrder[j]
+					AddressSortFlag = false
+				}
+			}
+		}
+		if AddressSortFlag {
+			break
+		}
+	}
 	//fmt.Print("address sort:")
 	//fmt.Println(time.Since(startTime))
 	//startTime = time.Now()
@@ -831,7 +831,8 @@ func (peer *Peer) abortInSequentialPlus(blocks []Block) {
 	for _, block := range blocks {
 		blockReadSet := make(map[string]bool)
 		blockWriteSet := make(map[string]bool)
-		for _, tx := range block.txs {
+		for i := 0; i < len(block.txs); i++ {
+			tx := block.txs[i]
 			if tx.abort {
 				continue
 			}
@@ -851,6 +852,7 @@ func (peer *Peer) abortInSequentialPlus(blocks []Block) {
 					}
 					if conflict {
 						tx.abort = true
+
 					} else {
 						blockReadSet[address] = true
 					}
