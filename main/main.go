@@ -2,8 +2,6 @@ package main
 
 import (
 	"TXExec/exec"
-	"fmt"
-	"runtime"
 )
 
 func test() {
@@ -12,8 +10,6 @@ func test() {
 	exec.SimpleTest()
 }
 func main() {
-	fmt.Println(runtime.NumCPU())
-	runtime.GOMAXPROCS(8)
 	//exec.Init()
 	test()
 }
