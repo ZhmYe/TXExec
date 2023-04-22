@@ -659,10 +659,10 @@ func (peer *Peer) execInSequentialImpl(blocks []Block) {
 		for _, tx := range block.txs {
 			//fmt.Println("start verify...")
 			//startTime := time.Now()
-			err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
-			if err != nil {
-				panic(err)
-			}
+			//err := rsa.VerifyPKCS1v15(tx.publicKey, crypto.SHA256, tx.hashed[:], tx.signature)
+			//if err != nil {
+			//	panic(err)
+			//}
 			//fmt.Println(time.Since(startTime))
 			switch tx.txType {
 			case transactSavings:
