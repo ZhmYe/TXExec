@@ -1,6 +1,9 @@
 package main
 
-import "TXExec/exec"
+import (
+	"TXExec/exec"
+	"runtime"
+)
 
 func test() {
 	//exec.ConflictTest()
@@ -8,6 +11,7 @@ func test() {
 	exec.SimpleTest()
 }
 func main() {
+	runtime.GOMAXPROCS(8)
 	//exec.Init()
 	test()
 }
