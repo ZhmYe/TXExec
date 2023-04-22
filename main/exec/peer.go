@@ -209,7 +209,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 				wg4tx.Add(len(blocks[i].txs))
 				//startTime := time.Now()
 				for _, transaction := range blocks[i].txs {
-					tmpTx := transaction
+					//tmpTx := transaction
 					//tx := transaction
 					go func(tx *Tx, wg4tx *sync.WaitGroup) {
 						defer wg4tx.Done()
@@ -358,7 +358,7 @@ func (peer *Peer) execInParalleling(ExecBlocks map[int][]Block) {
 						//		buffer.Store(readOpChecking.Key, writeResultChecking)
 						//	}
 						//}
-					}(tmpTx, &wg4tx)
+					}(transaction, &wg4tx)
 				}
 				wg4tx.Wait()
 				//fmt.Print("each block:")
