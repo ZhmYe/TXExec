@@ -4,8 +4,8 @@ import "TXExec/exec"
 
 func test() {
 	//exec.ConflictTest()
-	exec.PeerInit()
-	//exec.SimpleTest()
+	//exec.PeerInit()
+	exec.SimpleTest()
 }
 func main() {
 	//exec.Init()
