@@ -1,13 +1,12 @@
 package main
 
-import (
-	"TXExec/exec"
-)
+import "TXExec/exec"
 
 func test() {
 	//exec.ConflictTest()
 	//exec.PeerInit()
-	exec.SimpleTest()
+	//exec.SimpleTest()
+	exec.TmpTest()
 }
 func main() {
 	//exec.Init()

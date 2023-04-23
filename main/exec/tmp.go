@@ -15,7 +15,7 @@ type msg struct {
 	sign []byte
 }
 
-func tmpTest() {
+func TmpTest() {
 	Publickey, hashed, signature := getSignInfo()
 	fmt.Println(Publickey, hashed, signature)
 	testData := test{100, 10, 10}
