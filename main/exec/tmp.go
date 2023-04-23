@@ -10,9 +10,9 @@ import (
 )
 
 type test struct {
-	workload int64
-	nodeId   int64
-	number   int64
+	workload int
+	nodeId   int
+	number   int
 }
 type msg struct {
 	data test
