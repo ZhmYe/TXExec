@@ -16,8 +16,8 @@ type msg struct {
 }
 
 func TmpTest() {
-	Publickey, hashed, signature := getSignInfo()
-	fmt.Println(Publickey, hashed, signature)
+	_, _, signature := getSignInfo()
+	//fmt.Println(Publickey, hashed, signature)
 	testData := test{100, 10, 10}
 	testMsg := msg{testData, signature}
 	fmt.Print(unsafe.Sizeof(testMsg))
