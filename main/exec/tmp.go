@@ -30,7 +30,7 @@ func tmpGetSignInfo(testData test) (*rsa.PublicKey, [32]byte, []byte) {
 	//message := []byte("hello world")
 
 	// 计算消息摘要
-	message := *(*[]byte)(unsafe.Pointer(&testData))
+	message := []byte(fmt.Sprintf("%v", testData))
 	hashed := sha256.Sum256(message)
 
 	// 对消息摘要进行数字签名
