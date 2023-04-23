@@ -20,5 +20,5 @@ func TmpTest() {
 	//fmt.Println(Publickey, hashed, signature)
 	testData := test{100, 10, 10}
 	testMsg := msg{testData, signature}
-	fmt.Print(unsafe.Sizeof(testMsg))
+	fmt.Println(unsafe.Sizeof(testMsg))
 }
